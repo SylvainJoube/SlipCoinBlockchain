@@ -57,7 +57,6 @@ public class NodeInterface {
 						int messageType = newMessage.readInteger();
 						switch (messageType) {
 							case 1 : //message de type donnée
-								
 								NetBuffer toTransmit = receiveData(newMessage);
 								// TODO broadcast message if(transmitData)
 								break;
@@ -77,12 +76,14 @@ public class NodeInterface {
 		}
 		int dataType = data.readInteger();
 		switch (dataType) {
-			case SCBlockDataType.TRANSACTION.asInt() :
-				SCBlockData_transaction transa
+			//case SCBlockDataType.TRANSACTION :
+			//	break;//SCBlockData_transaction transa
 			default:
 				throw new Error();
 		}
 	}
+	
+	
 	
 	
 	public static void sleep(long millisec) {

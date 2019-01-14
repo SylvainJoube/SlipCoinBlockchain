@@ -39,28 +39,41 @@ public class SCBlockData_transaction implements SCBlockData {
 
 	public static SCBlockData_transaction readFromByteArray(byte[] readByteArray) {
 		NetBuffer readNetBuffer = new NetBuffer(readByteArray);
-		return readFromNetBuffer(readNetBuffer);	
+		return readFromNetBuffer(readNetBuffer, 0);	
 	}
 	
 	/** Avec la signature (lecture du réseau)
 	 * @return 
 	 */
-	public static SCBlockData_transaction readFromNetBuffer(NetBuffer readFrom) {
-		if (readFrom == null) return null;
+	public static SCBlockData_transaction readFromNetBuffer(NetBuffer readFromBuffer, int bufferOffset) {
+		if (readFromBuffer == null) return null;
 		
-		readFrom.resetPosition();
-		readFrom.readInt(); // type de la donnée (ici SCBlockDataType.TRANSACTION.asInt())
-		int amount = readFrom.readInt();
-		String senderPublicKey = readFrom.readString();
-		String receiverPublicKey = readFrom.readString();
-		int timeStamp = readFrom.readInt();
-		String senderSignature = readFrom.readString();
+		readFromBuffer.setPosition(bufferOffset);
+		readFromBuffer.readInt(); // type de la donnée (ici SCBlockDataType.TRANSACTION.asInt())
+		int amount = readFromBuffer.readInt();
+		String senderPublicKey = readFromBuffer.readString();
+		String receiverPublicKey = readFromBuffer.readString();
+		int timeStamp = readFromBuffer.readInt();
+		String senderSignature = readFromBuffer.readString();
 		
 		SCBlockData_transaction transaction = new SCBlockData_transaction(amount, senderPublicKey, receiverPublicKey, timeStamp, false, null, senderSignature);
 		//if (transaction.checkValidity() == false) return null;
 		return transaction;
 	}
 	
+	/** Plus sécurisé que de comparer uniquement les signatures ou hash (attaque possible ou plus lent)
+	 */
+	@Override
+	public boolean equals(Object o) {
+		if ( ! o.getClass().equals(this.getClass()) ) return false;
+		SCBlockData_transaction compareTo = (SCBlockData_transaction) o;
+		if ( amount != compareTo.amount ) return false;
+		if ( ! senderPublicKey.equals(compareTo.senderPublicKey) ) return false;
+		if ( ! receiverPublicKey.equals(compareTo.receiverPublicKey) ) return false;
+		if ( timeStamp != compareTo.timeStamp ) return false;
+		if ( ! senderSignature.equals(compareTo.senderSignature) ) return false;
+		return true;
+	}
 	
 	/** Transaction -> NetBuffer
 	 */

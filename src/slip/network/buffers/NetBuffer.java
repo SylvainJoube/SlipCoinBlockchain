@@ -47,11 +47,11 @@ public class NetBuffer { // fonctionnement synchrone, non thread-safe
 	public void writeBool(boolean boolData) { writeBoolean(boolData); }
 	
 
-	public void resetPosition() {
-		currentReadPos = 0;
+	public void setPosition(int setOffset) {
+		currentReadPos = setOffset;
 	}
 	public void rewind() {
-		resetPosition();
+		setPosition(0);
 	}
 	// Les Read retournent une exception si on tente de lire un 
 	

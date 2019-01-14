@@ -76,24 +76,72 @@ public class SCNode {
 		return true;
 	}
 	
+	
+	/** Regarde si la transaction est dans le buffer, non encore ajouté à la chaîne
+	 * @param transactionToCheck
+	 * @return 
+	 */
+	public boolean transactionIsAlreadyInDataBuffer(SCBlockData_transaction transactionToCheck) {
+		if (transactionToCheck == null) return false;
+		// Parcours de la liste de ce qu'il y a en buffer
+		for (int iDataInBuffer = 0; iDataInBuffer < bufferedDataList.size(); iDataInBuffer++) {
+			SCBlockData data = bufferedDataList.get(iDataInBuffer);
+			if (data.getDataType().equals(SCBlockDataType.TRANSACTION)) {
+				// Si c'est une transaction
+				SCBlockData_transaction compareToTransaction = (SCBlockData_transaction) data;
+				if (compareToTransaction.equals(transactionToCheck)) {
+					return true;
+				}
+				
+			}
+		}
+		return false; // aucune correspondance
+	}
+	
+	/** Regarde si la transaction est dans la blockchain
+	 * @param transactionToCheck
+	 * @return
+	 */
+	public boolean transactionIsAlreadyInBlockchain(SCBlockData_transaction transactionToCheck) {
+		if (transactionToCheck == null) return false;
+		// Parcours de la totalité de la chaîne
+		for (int iBlock = 0; iBlock < blockChain.size(); iBlock++) {
+			SCBlock block = blockChain.get(iBlock);
+			if (block.transactionIsAlreadyInBlock(transactionToCheck)) {
+				return true;
+			}
+		}
+		return false; // aucune correspondance
+	}
+	
+	
 	/** Ajout de donnée au buffer de la cellule (réception de donnée à ajouter, ou création)
 	 * @param newData donnée à ajouter au buffer
 	 * @return vrai si la donnée a été ajoutée au buffer et qu'elle n'était pas présente dans la 
 	 */
 	public boolean addToDataBuffer(SCBlockData newData) {
 		
-		// Cas de l'ajout d'une transaction
-		if (newData.getDataType().equals(SCBlockDataType.TRANSACTION)) {
-			
-			
-			
+		try {
+			// Cas de l'ajout d'une transaction
+			if (newData.getDataType().equals(SCBlockDataType.TRANSACTION)) {
+				
+				// 1) Vérifier que la donnée est bien valide (avec la signature de l'auteur qui l'a émise)
+				SCBlockData_transaction transaction = (SCBlockData_transaction) newData; // en cas d'attaque, ce cast pourrait mal se passer
+				boolean authentifiedTransaction = transaction.checkSignatureValidity();
+				if (! authentifiedTransaction) return false; // transaction invalide
+				// 2) Regarder si la donnée est déjà dans le buffer
+				if (transactionIsAlreadyInDataBuffer(transaction)) return false;
+				// 3) Regarder si la donnée est déjà dans la blockchain
+				if (transactionIsAlreadyInBlockchain(transaction)) return false;
+				// 4) Si la donnée a passé toutes les étapes précédentes, je l'ajoute à mon buffer
+				
+				bufferedDataList.add(transaction);
+				return true;
+			}
+		} catch (Exception castException) {
+			return false;
 		}
-			
-		
-		// 1) Vérifier que la donnée est bien valide (avec la signature de l'auteur qui l'a émise)
-		// 2) Regarder si la donnée est déjà dans le buffer
-		// 3) Regarder si la donnée est déjà dans la blockchain
-		// 4) Si la donnée a passé toutes les étapes précédentes, je l'ajoute à mon buffer
+		return false;
 	}
 	
 	/** Assembler (= créer) un nouveau bloc avec les données du buffer
@@ -124,7 +172,7 @@ public class SCNode {
 		// Je supprime les données de mon buffer
 		bufferedDataList.clear();
 		// Je broadcast ma chaine (les X derniers blocs)
-		broadcastMyBlockChain();
+		broadcastMyBlockChain(3);
 		return true;
 		
 	}
@@ -133,9 +181,12 @@ public class SCNode {
 	 * 
 	 */
 	public void receiveNewBlockChain() {
+		
+		
+		
 		// 1) Je vérifie la chaîne reçue : s'il y a la moindre erreur dans la signature des blocs, je l'ignore totalement
 		// 2) Si ce n'est qu'un ajout de blocs par rapport à la mienne, OK, je met à jour ma chaîne
-		// 3) S'il y a conflit : si ma chaîne est la plus longue, je l'ignore
+		// 3) S'il y a conflit : si ma chaîne est la plus longue, je l'ignore, je l'envoie à celui qui vient de m'envoyer sa chaîne
 		// 4) Si ma chaine est plus courte mais qu'il y a des blocs en conflit : je reprends toutes les données dans mon buffer
 		///    je supprime mes blocs de ma chaîne et j'accepte cette autre chaîne, je re-broadcast les données qui ne sont plus dans ma chaîne
 		// 5) Si ma chaine est de même taille (blocs) : je conserve la chaîne de plus grande taille totale (octets)
@@ -143,10 +194,12 @@ public class SCNode {
 		
 	}
 	
-	public void broadcastMyBlockChain() {
+	public void broadcastMyBlockChain(int nbDerniersBlocs) {
 		// 1) Broadcast de ma chaîne à tous les intermédiaires que je connais
 		// Pour ne pas faire de boucle, -> TTL + je hash cette blockchain et je garde une liste des hash que j'ai déjà transmis pour ne pas retransmettre indéfiniment
+		
 	}
+	
 	
 	
 	

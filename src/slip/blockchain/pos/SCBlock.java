@@ -16,6 +16,7 @@ interface SCBlockInterafce {
 	public String computeHash();
 	public boolean checkWithBlockSignature();
 	public double getWalletVariation(String ownerPublicKey);
+	public boolean transactionIsAlreadyInBlock(SCBlockData_transaction transactionToCheck);
 	
 	
 }
@@ -72,7 +73,7 @@ public class SCBlock implements SCBlockInterafce {
 			NetBuffer scDataAsNetBuffer = new NetBuffer(scDataAsByteArray); // buffer décodé
 			int dataType = scDataAsNetBuffer.readInt(); // type de donnée
 			if (dataType == SCBlockDataType.TRANSACTION.asInt()) { // transaction
-				SCBlockData_transaction dataTransaction = SCBlockData_transaction.readFromNetBuffer(scDataAsNetBuffer); // création de la transaction
+				SCBlockData_transaction dataTransaction = SCBlockData_transaction.readFromNetBuffer(scDataAsNetBuffer, 0); // création de la transaction
 				myData.add(dataTransaction); // ajout de la transaction au bloc
 			} else {
 				System.out.println("ERREUR : SCBlock.readFromNetBuffer() : donnée de type invalide dataType(" + dataType + ") != SCBlockDataType.TRANSACTION.asInt()(" + SCBlockDataType.TRANSACTION.asInt() + ")"); 
@@ -172,6 +173,24 @@ public class SCBlock implements SCBlockInterafce {
 			}
 		}
 		return ownerVariation;
+	}
+	
+	public boolean transactionIsAlreadyInBlock(SCBlockData_transaction transactionToCheck) {
+		if (transactionToCheck == null) return false;
+		// Parcours de la liste des transactions du bloc
+		for (int iData = 0; iData < myData.size(); iData++) {
+			SCBlockData data = myData.get(iData);
+			if (data.getDataType().equals(SCBlockDataType.TRANSACTION)) {
+				// Si c'est une transaction, je les compare
+				SCBlockData_transaction compareToTransaction = (SCBlockData_transaction) data;
+				if (compareToTransaction.equals(transactionToCheck)) {
+					return true;
+				}
+				
+			}
+		}
+		return false; // Aucune correspondance si je suis arrivé ici
+		
 	}
 	
 	/*public SCBlock(String arg_previousHash, String arg_authorPublicKey, String arg_authorPrivateKey, ArrayList<SCBlockData> arg_myData) {
