@@ -17,7 +17,7 @@ public class NodeInterface {
 	private SCNode node;
 	private ArrayList<NodeClient> nodeClients;
 	private TCPServer nodeServer;
-	private ArrayList<Address> AddressBook;
+	private ArrayList<NetAddress> AddressBook;
 	
 	public NodeInterface(int tcpPort) {
 		nodeServer = new TCPServer(tcpPort);
@@ -57,6 +57,11 @@ public class NodeInterface {
 							throw new Error();
 						}
 						int messageType = newMessage.readInteger();
+						if (! newMessage.currentData_isInt()) {
+							throw new Error();
+						}
+						int senderPort = newMessage.readInteger();
+						addAddressToBook(client.getNodeIp(), senderPort);
 						switch (messageType) {
 							case 1 : //message de type donnée
 								NetBuffer toTransmit = receiveData(newMessage);
@@ -74,7 +79,11 @@ public class NodeInterface {
 	}
 	
 	public void broadcastMessage(NetBuffer toTransmit) {
-		log(toTransmit.toString());
+		for (NetAddress address : AddressBook) {
+			TCPClient client = new TCPClient(address.getIp(), address.getPort());
+			client.sendMessage(toTransmit);
+			while 
+		}
 	}
 	public NetBuffer receiveData(NetBuffer data) throws Error {
 		if (!data.currentData_isInt()) {
@@ -84,7 +93,7 @@ public class NodeInterface {
 		SCBlockDataType dataType = SCBlockDataType.getFromInt(dataTypeAsInt);
 		switch (dataType) {
 			case TRANSACTION :
-				SCBlockData_transaction transaction = SCBlockData_transaction.readFromNetBuffer(data, 1);
+				SCBlockData_transaction transaction = SCBlockData_transaction.readFromNetBuffer(data, 2);
 				if(this.node.addToDataBuffer(transaction)) {
 					data.setPosition(data.getLastIndex()); //on se positionne sur le dernier int, qui contient le TTL
 					if (!data.currentData_isInt()) {
@@ -107,7 +116,15 @@ public class NodeInterface {
 		}
 	}
 	
-	
+	public void addAddressToBook(String ip, int port) {
+		NetAddress toAdd = new NetAddress(ip, port);
+		for(NetAddress netAddress : AddressBook) {
+			if (toAdd.toString().equals(netAddress.toString())) {
+				return;
+			}
+		}
+		AddressBook.add(toAdd);
+	}
 	
 	
 	public static void sleep(long millisec) {

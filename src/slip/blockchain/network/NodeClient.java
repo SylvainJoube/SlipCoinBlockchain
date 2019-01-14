@@ -10,7 +10,7 @@ public class NodeClient {
 	
 	public NodeClient(TCPClient arg_tcpClient) {
 		tcpClient = arg_tcpClient;
-		//this.nodeIp = tcpClient.getRemoteIp();
+		this.nodeIp = tcpClient.getRemoteIP();
 	}
 
 	public String getNodeIp() {

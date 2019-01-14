@@ -68,7 +68,7 @@ public class NetBuffer { // fonctionnement synchrone, non thread-safe
 	public String toString() {
 		StringBuffer buff = new StringBuffer();
 		for (NetBufferData data : this.dataList) {
-			buff.append(data.toString());
+			buff.append(data.toString() + " ");
 		}
 		if (buff.length() > 0) return new String(buff);
 		else
