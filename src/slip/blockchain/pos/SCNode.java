@@ -178,20 +178,42 @@ public class SCNode {
 	}
 	
 	
+	public static boolean checkBlockChainValidity(ArrayList<SCBlock> receivedBlockChain) {
+		if (receivedBlockChain == null) return false;
+		if (receivedBlockChain.size() == 0) return false; // test
+		//String previousBlockSignature = receivedBlockChain.get(0).getBlockSinature();
+		String previousBlockSignature;
+		for (int iBlock = 0; iBlock < receivedBlockChain.size(); iBlock++) { // (SCBlock block : receivedBlockChain)
+			SCBlock block = receivedBlockChain.get(iBlock);
+			if (! block.checkWithBlockSignature()) return false; // bloc invalide
+			previousBlockSignature = block.getPreviousBlockSignature();
+			
+		}
+		
+	}
 	
-	/** Réception d'une blockchain concurrente à la mienne
+	
+	/** Réception de la dernière partie blockchain concurrente à la mienne
 	 * 
 	 * -> ma blockchain va être réarrangée
 	 */
-	public void receiveNewBlockChain() {
+	public SCNode_rcvBlockChainResult receiveNewBlockChainPart(ArrayList<SCBlock> receivedBlockChain) {
+		if (receivedBlockChain == null) return null;
+		SCNode_rcvBlockChainResult result = new SCNode_rcvBlockChainResult();
+		
+		// Je vérifie la validité de cette chaîne
+		
+		
+		
 		// 1) Je vérifie la chaîne reçue : s'il y a la moindre erreur dans la signature des blocs, je l'ignore totalement
+		// 1.5) Je regarde si j'ai le premier bloc de la chaine
 		// 2) Si ce n'est qu'un ajout de blocs par rapport à la mienne, OK, je met à jour ma chaîne
 		// 3) S'il y a conflit : si ma chaîne est la plus longue, je l'ignore, je l'envoie à celui qui vient de m'envoyer sa chaîne
 		// 4) Si ma chaine est plus courte mais qu'il y a des blocs en conflit : je reprends toutes les données dans mon buffer
 		///    je supprime mes blocs de ma chaîne et j'accepte cette autre chaîne, je re-broadcast les données qui ne sont plus dans ma chaîne
 		// 5) Si ma chaine est de même taille (blocs) : je conserve la chaîne de plus grande taille totale (octets)
 		// 6) Si ma chaine a été changée (et donc validée), je relaye l'information : nouvelle chaîne
-		
+		return result;
 	}
 	
 	public void broadcastMyBlockChain(int nbDerniersBlocs) {
