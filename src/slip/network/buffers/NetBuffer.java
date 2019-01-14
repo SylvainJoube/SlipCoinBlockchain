@@ -50,6 +50,10 @@ public class NetBuffer { // fonctionnement synchrone, non thread-safe
 	public void setPosition(int setOffset) {
 		currentReadPos = setOffset;
 	}
+	
+	public void insertAtPos(int position, NetBufferData dataToInsert) {
+		if( position > 0 && position < this.dataList.size()) this.dataList.add(position, dataToInsert);
+	}
 	public void rewind() {
 		setPosition(0);
 	}
@@ -59,6 +63,16 @@ public class NetBuffer { // fonctionnement synchrone, non thread-safe
 	 */
 	public int getLastIndex() {
 		return dataList.size() - 1;
+	}
+	
+	public String toString() {
+		StringBuffer buff = new StringBuffer();
+		for (NetBufferData data : this.dataList) {
+			buff.append(data.toString());
+		}
+		if (buff.length() > 0) return new String(buff);
+		else
+			return "";
 	}
 	// Les Read retournent une exception si on tente de lire un 
 	
