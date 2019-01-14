@@ -13,26 +13,49 @@ public class SCCoinWallet {
 	private String publicKeyAsString;
 	private PrivateKey privateKey;
 	private PublicKey publicKey;
+	private String recognizableName;
+	private double lastValidCoinAmount = 0; // actualisé via la blockchain
 	
-	public static SCCoinWallet createNewWallet()  {
+	public static SCCoinWallet createNewWallet(String recognizableName)  {
 		KeyPair keys = null;
 		try {
 			keys = RSA.generateRSAKeyPair();
-		} catch (Exception e) { }
+		} catch (Exception e) { e.printStackTrace(); }
 		if (keys == null) return null;
 
 		String privateKeyAsString = RSAKey.saveKey(keys.getPrivate());
 		String prublicKeyAsString = RSAKey.saveKey(keys.getPublic());
-		return new SCCoinWallet(privateKeyAsString, prublicKeyAsString);
-		
+		return new SCCoinWallet(privateKeyAsString, prublicKeyAsString, recognizableName);
 	}
 	
-	public SCCoinWallet(String arg_privateKey, String arg_publicKey) {
+	public SCCoinWallet(String arg_privateKey, String arg_publicKey, String arg_recognizableName) {
 		privateKeyAsString = arg_privateKey;
 		publicKeyAsString = arg_publicKey;
+		recognizableName = arg_recognizableName;
 		privateKey = RSAKey.loadPrivateKey(privateKeyAsString);
 		publicKey = RSAKey.loadPublicKey(publicKeyAsString);
-		
 	}
+	
+	public String getPublicKey() {
+		return publicKeyAsString;
+	}
+	public String getPrivateKey() {
+		return privateKeyAsString;
+	}
+	public String getRecognizableName() {
+		return recognizableName;
+	}
+	@Override
+	public String toString() {
+		return "Wallet de " + recognizableName + ". Montant = " + lastValidCoinAmount + ". Clef publique = " + publicKeyAsString;
+	}
+	/** Mise à jour du porte monnaie, plus tard réellement mis à jour du réseau (plusieurs confirmations de plusieurs noeuds)
+	 * @param fromNode 
+	 */
+	public void updateWallet(SCNode fromNode) {
+		lastValidCoinAmount = SCNode.getWalletAmountFromNodeChain(fromNode, publicKeyAsString);
+	}
+	
+	
 	
 }

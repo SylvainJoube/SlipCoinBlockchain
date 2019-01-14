@@ -13,6 +13,8 @@ import java.util.ArrayList;
 public class SCNode {
 
 	public static final double initialWalletAmount = 10;
+	public static final boolean forceIdenticalTimestamp = false; // Pour faire des tests et bien vérifier que deux transactions identiques sont bien illégales
+	public static final long forceTimestampValue = 12345;
 	
 	//public static mainNode = keurkeur
 	
@@ -34,6 +36,11 @@ public class SCNode {
 	
 	// + charger du disque ma chaîne
 	// + tard : faire que l'intégralité de la chaîne ne soit pas chargée en mémoire vive mais reste sur le disque
+	
+	public static double getWalletAmountFromNodeChain(SCNode node, String ownerPublicKey) {
+		
+		return node.getWalletAmount(ownerPublicKey);
+	}
 	
 	/** Récupérer l'argent dispo dans le compte d'une personne, depuis la blockchain
 	 * Plus tard, il serait envisagable de faire des blocs signés par l'ensemble du réseau (51+%) pour faire un récapitulatif des wallets
@@ -83,6 +90,7 @@ public class SCNode {
 	 */
 	public boolean transactionIsAlreadyInDataBuffer(SCBlockData_transaction transactionToCheck) {
 		if (transactionToCheck == null) return false;
+		//System.out.println("transactionIsAlreadyInDataBuffer : bufferedDataList.size() = " + bufferedDataList.size());
 		// Parcours de la liste de ce qu'il y a en buffer
 		for (int iDataInBuffer = 0; iDataInBuffer < bufferedDataList.size(); iDataInBuffer++) {
 			SCBlockData data = bufferedDataList.get(iDataInBuffer);
@@ -113,7 +121,15 @@ public class SCNode {
 		}
 		return false; // aucune correspondance
 	}
+	//(int arg_amount, String arg_senderKey, String arg_receiverKey, long arg_timeStamp, boolean hasToSignTransaction, String senderPrivateKey, String arg_senderSignature)
 	
+	public boolean newTransaction(double amount, String senderPrivateKey, String senderPublicKey, String receiverPublicKey) {
+		long currentTimeStamp = System.currentTimeMillis();
+		if (SCNode.forceIdenticalTimestamp) currentTimeStamp = SCNode.forceTimestampValue; // essentiellement pour faire du débug et montrer que ça marche bien !
+		SCBlockData_transaction newTransaction = 
+				new SCBlockData_transaction(amount, senderPublicKey, receiverPublicKey, currentTimeStamp, true, senderPrivateKey, null);
+		return addToDataBuffer(newTransaction);
+	}
 	
 	/** Ajout de donnée au buffer de la cellule (réception de donnée à ajouter, ou création)
 	 * @param newData donnée à ajouter au buffer
@@ -129,12 +145,19 @@ public class SCNode {
 				SCBlockData_transaction transaction = (SCBlockData_transaction) newData; // en cas d'attaque, ce cast pourrait mal se passer
 				boolean authentifiedTransaction = transaction.checkSignatureValidity();
 				if (! authentifiedTransaction) return false; // transaction invalide
+				boolean validAmountTransaction = checkTransactionAmountValidity(transaction);
+				if (! validAmountTransaction) return false;
 				// 2) Regarder si la donnée est déjà dans le buffer
 				if (transactionIsAlreadyInDataBuffer(transaction)) return false;
 				// 3) Regarder si la donnée est déjà dans la blockchain
 				if (transactionIsAlreadyInBlockchain(transaction)) return false;
-				// 4) Si la donnée a passé toutes les étapes précédentes, je l'ajoute à mon buffer
 				
+				/*boolean scc = transactionIsAlreadyInDataBuffer(transaction);
+				System.out.println("SCNode.addToDataBuffer : transactionIsAlreadyInDataBuffer 1 = " + scc);
+				scc = transactionIsAlreadyInDataBuffer(transaction);
+				System.out.println("SCNode.addToDataBuffer : transactionIsAlreadyInDataBuffer 2 = " + scc);*/
+				
+				// 4) Si la donnée a passé toutes les étapes précédentes, je l'ajoute à mon buffer
 				bufferedDataList.add(transaction);
 				return true;
 			}
@@ -146,9 +169,10 @@ public class SCNode {
 	
 	/** Assembler (= créer) un nouveau bloc avec les données du buffer
 	 *  Le nouveau bloc sera
+	 * @param useThisPublicKeyInstead  null si utiliser la clef du possesseur de la SCNode actuelle
 	 * @return
 	 */
-	public boolean assembleNewBlockWithBufferedData() { // SCBlock
+	public boolean assembleNewBlockWithBufferedData(String useThisPublicKeyInstead, String useThisPrivateKeyInstead) { // SCBlock
 		
 		//if (bufferedDataList.size() == 0) return false; // ne pas créer inutilement de bloc vide !
 		
@@ -158,14 +182,17 @@ public class SCNode {
 			previousBlockSignature = previousBlock.getBlockSignature();
 		}
 		// Avant : bien vérifier que dans ma chaîne, il n'y a aucune donnée identique à celle que j'ai dans mon buffer
+
+		if (useThisPublicKeyInstead == null) useThisPublicKeyInstead = nodeOwnerPublicKey;
+		if (useThisPrivateKeyInstead == null) useThisPrivateKeyInstead = nodeOwnerPrivateKey;
 		
 		// Toutes les transactions du buffer sont supposées valides (je n'ajoute aucune transaction à mon buffer)
-		SCBlock newBlock = new SCBlock(previousBlockSignature, nodeOwnerPublicKey);
+		SCBlock newBlock = new SCBlock(previousBlockSignature, useThisPublicKeyInstead);
 		for (int iBuffData = 0; iBuffData < bufferedDataList.size(); iBuffData++) {
 			newBlock.addData(bufferedDataList.get(iBuffData));
 		}
 		
-		newBlock.signBlock(nodeOwnerPrivateKey); // c'est mon block à moi
+		newBlock.signBlock(useThisPrivateKeyInstead); // c'est mon block à moi
 		
 		// J'ajoute mon bloc à ma chaîne
 		blockChain.add(newBlock);
@@ -208,6 +235,8 @@ public class SCNode {
 	public boolean checkMyBlockChain() {
 		return checkBlockChainValidity(blockChain);
 	}
+	
+	
 	
 	
 	/** Réception de la dernière partie blockchain concurrente à la mienne

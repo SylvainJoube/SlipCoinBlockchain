@@ -103,7 +103,7 @@ public class SCBlockData_transaction implements SCBlockData {
 	}
 	
 	// Ici, je pars du principe que la transaction n'est pas encore signée
-	public SCBlockData_transaction(int arg_amount, String arg_senderKey, String arg_receiverKey, long arg_timeStamp, boolean hasToSignTransaction, String senderPrivateKey, String arg_senderSignature) { // , String arg_senderSignature
+	public SCBlockData_transaction(double arg_amount, String arg_senderKey, String arg_receiverKey, long arg_timeStamp, boolean hasToSignTransaction, String senderPrivateKey, String arg_senderSignature) { // , String arg_senderSignature
 		// Utilisation pour une transaction non signée
 		senderPublicKey = arg_senderKey;
 		receiverPublicKey = arg_receiverKey;

@@ -3,6 +3,7 @@ package slip.test;
 import java.util.ArrayList;
 
 import slip.blockchain.pos.SCBlockData_transaction;
+import slip.blockchain.pos.SCCoinWallet;
 import slip.blockchain.pos.SCNode;
 import slip.network.buffers.NetBuffer;
 import slip.network.tcp.TCPClient;
@@ -349,13 +350,21 @@ public class FullTest {
 		System.out.println(infoMessage);
 	}
 	
-	public static void main(String[] args) {
+	
+	public static void showWallets(ArrayList<SCCoinWallet> walletList, SCNode fromNode) {
+		for (SCCoinWallet wallet : walletList) {
+			wallet.updateWallet(fromNode);
+			System.out.println(wallet);
+		}
+	}
+	
+	public static void main(String[] args) throws InterruptedException {
 		
 		SCNode node = new SCNode(RSA.STR_PUBLIC_KEY, RSA.STR_PRIVATE_KEY);
 		//SCBlockData_transaction(int arg_amount, String arg_senderKey, String arg_receiverKey, boolean hasToSignTransaction, String senderPrivateKey, String arg_senderSignature);
 		SCBlockData_transaction transaction
 		  = new SCBlockData_transaction(78, RSA.STR_PUBLIC_KEY, "123456789", System.currentTimeMillis(), true, RSA.STR_PRIVATE_KEY, null);
-		System.out.println(transaction.toString());
+		//System.out.println(transaction.toString());
 		System.out.println("Transaction valide : " + transaction.checkSignatureValidity());
 		transaction.receiverPublicKey = "123456779"; // petite erreur
 		System.out.println("Transaction valide : " + transaction.checkSignatureValidity());
@@ -363,16 +372,70 @@ public class FullTest {
 		System.out.println("Transaction valide : " + transaction.checkSignatureValidity());
 		transaction.receiverPublicKey = "123456789"; // retour à la normale
 		System.out.println("Transaction valide : " + transaction.checkSignatureValidity());
+
+		SCCoinWallet walletEtienne = SCCoinWallet.createNewWallet("Etienne");
+		SCCoinWallet walletSylvain = SCCoinWallet.createNewWallet("Sylvain");
+		SCCoinWallet walletLong = SCCoinWallet.createNewWallet("Long");
+		SCCoinWallet walletAntonin = SCCoinWallet.createNewWallet("Antonin");
+		SCCoinWallet walletProfDeJava = SCCoinWallet.createNewWallet("LaProfDeJava!");
+		
+		ArrayList<SCCoinWallet> a1Wallet = new ArrayList<SCCoinWallet>();
+		a1Wallet.add(walletEtienne);
+		a1Wallet.add(walletSylvain);
+		a1Wallet.add(walletLong);
+		a1Wallet.add(walletAntonin);
+		a1Wallet.add(walletProfDeJava);
+		
+		showWallets(a1Wallet, node);
+		boolean success;
+		success = node.newTransaction(3.421, walletEtienne.getPrivateKey(), walletEtienne.getPublicKey(), walletSylvain.getPublicKey());
+		System.out.println("Transaction : Etienne -> Sylvain : réussite = " + success);
+		//showWallets(a1Wallet, node);
+
+		// OK pour le TimeStamp
+		success = node.newTransaction(1.7852, walletLong.getPrivateKey(), walletLong.getPublicKey(), walletSylvain.getPublicKey());
+		System.out.println("Transaction :1 Long -> Sylvain : réussite = " + success);
+		Thread.sleep(1);
+		success = node.newTransaction(1.7852, walletLong.getPrivateKey(), walletLong.getPublicKey(), walletSylvain.getPublicKey());
+		System.out.println("Transaction :2 Long -> Sylvain : réussite = " + success);
+		Thread.sleep(1);
+		success = node.newTransaction(0.2, walletLong.getPrivateKey(), walletLong.getPublicKey(), walletSylvain.getPublicKey());
+		System.out.println("Transaction :3 Long -> Sylvain : réussite = " + success);
+		Thread.sleep(1);
+		success = node.newTransaction(0.2, walletLong.getPrivateKey(), walletLong.getPublicKey(), walletSylvain.getPublicKey());
+		System.out.println("Transaction :4 Long -> Sylvain : réussite = " + success);
+		//showWallets(a1Wallet, node);
+		
+		success = node.newTransaction(78.421, walletAntonin.getPrivateKey(), walletAntonin.getPublicKey(), walletSylvain.getPublicKey());
+		System.out.println("Transaction : Antonin -> Sylvain : réussite = " + success);
+		//showWallets(a1Wallet, node);
+		
+		success = node.newTransaction(8.11, walletLong.getPrivateKey(), walletLong.getPublicKey(), walletEtienne.getPublicKey());
+		System.out.println("Transaction : Long -> Sylvain : réussite = " + success);
+		//showWallets(a1Wallet, node);
+		
+		success = node.newTransaction(12.8765, walletSylvain.getPrivateKey(), walletSylvain.getPublicKey(), walletProfDeJava.getPublicKey());
+		System.out.println("Transaction : Sylvain -> Prof de Java : réussite = " + success);
+		showWallets(a1Wallet, node);
+
+		System.out.println(" --- Sylvain mine des blocs --- ");
+		node.assembleNewBlockWithBufferedData(walletSylvain.getPublicKey(), walletSylvain.getPrivateKey());
+		node.assembleNewBlockWithBufferedData(walletSylvain.getPublicKey(), walletSylvain.getPrivateKey());
+		node.assembleNewBlockWithBufferedData(walletSylvain.getPublicKey(), walletSylvain.getPrivateKey());
+		node.assembleNewBlockWithBufferedData(walletSylvain.getPublicKey(), walletSylvain.getPrivateKey());
+		node.assembleNewBlockWithBufferedData(walletSylvain.getPublicKey(), walletSylvain.getPrivateKey());
+		showWallets(a1Wallet, node);
+
+		System.out.println(" --- Antonin mine des blocs --- ");
+		node.assembleNewBlockWithBufferedData(walletAntonin.getPublicKey(), walletAntonin.getPrivateKey());
+		node.assembleNewBlockWithBufferedData(walletAntonin.getPublicKey(), walletAntonin.getPrivateKey());
+		node.assembleNewBlockWithBufferedData(walletAntonin.getPublicKey(), walletAntonin.getPrivateKey());
+		node.assembleNewBlockWithBufferedData(walletAntonin.getPublicKey(), walletAntonin.getPrivateKey());
+		node.assembleNewBlockWithBufferedData(walletAntonin.getPublicKey(), walletAntonin.getPrivateKey());
+		showWallets(a1Wallet, node);
 		
 		
-		
-		node.assembleNewBlockWithBufferedData();
-		node.assembleNewBlockWithBufferedData();
-		node.assembleNewBlockWithBufferedData();
-		node.assembleNewBlockWithBufferedData();
-		node.assembleNewBlockWithBufferedData();
-		node.assembleNewBlockWithBufferedData();
-		
+		if (true) return;
 		System.out.println("Solde = " + node.getWalletAmount(RSA.STR_PUBLIC_KEY));
 		System.out.println("Chaine intègre = " + node.checkMyBlockChain());
 		
