@@ -19,5 +19,16 @@ public enum SCBlockDataType {
 		return typeAsInt;
 	}
 	
+	public static SCBlockDataType getFromInt(int dataType) {
+		switch (dataType) {
+		case 0 : return UNKNOWN;
+		case 1 : return TRANSACTION;
+		case 2 : return SYSTEM_MESSAGE;
+		case 3 : return SYSTEM_ERROR;
+		default : return UNKNOWN;
+		}
+		
+	}
+	
 	
 }

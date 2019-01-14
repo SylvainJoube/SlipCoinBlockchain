@@ -74,10 +74,15 @@ public class NodeInterface {
 		if (!data.currentData_isInt()) {
 			throw new Error();
 		}
-		int dataType = data.readInteger();
+		int dataTypeAsInt = data.readInteger();
+		SCBlockDataType dataType = SCBlockDataType.getFromInt(dataTypeAsInt);
 		switch (dataType) {
-			//case SCBlockDataType.TRANSACTION :
-			//	break;//SCBlockData_transaction transa
+			case TRANSACTION :
+				SCBlockData_transaction transaction = SCBlockData_transaction.readFromNetBuffer(data, 1);
+				if(this.node.addToDataBuffer(transaction)) {
+					data.setPosition(data.getLastIndex()); //CETTE FONCTION EXISTE OK
+				}
+				break;//SCBlockData_transaction transa
 			default:
 				throw new Error();
 		}

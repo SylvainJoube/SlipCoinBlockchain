@@ -181,9 +181,6 @@ public class SCNode {
 	 * 
 	 */
 	public void receiveNewBlockChain() {
-		
-		
-		
 		// 1) Je vérifie la chaîne reçue : s'il y a la moindre erreur dans la signature des blocs, je l'ignore totalement
 		// 2) Si ce n'est qu'un ajout de blocs par rapport à la mienne, OK, je met à jour ma chaîne
 		// 3) S'il y a conflit : si ma chaîne est la plus longue, je l'ignore, je l'envoie à celui qui vient de m'envoyer sa chaîne
