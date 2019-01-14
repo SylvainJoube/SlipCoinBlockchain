@@ -1,5 +1,6 @@
 package slip.network.tcp;
 
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -15,6 +16,7 @@ public class TCPClient {
 	private Object bufferListLock = new Object();
 	// Utilisation d'un AtomicBoolean pour ne pas bloquer le thread principal de l'applications lors de la vérification des nouveaux messages
 	private AtomicBoolean canAccessReadyBufferList = new AtomicBoolean(true); // Un booléen atomique donc thread-safe, pour savoir si
+	private String remoteIP = "";
 	//private boolean serverSide_clientIsAccepted = false;
 	
 	public TCPClient() {
@@ -24,7 +26,18 @@ public class TCPClient {
 		connect(hostIp, hostPort);
 	}
 	
+	/** Résoudre l'IP distante du client
+	 *  @return
+	 */
+	public String getRemoteIP() {
+		return remoteIP;
+	}
+	
 	public TCPClient(Socket workingSocket) {
+		if (workingSocket != null) {
+			InetAddress sockAddr = workingSocket.getInetAddress();
+			remoteIP = sockAddr.getHostAddress();
+		}
 		myThread = new TCPClientThread(this, workingSocket, false);
 		new Thread(myThread).start();
 	}
@@ -32,6 +45,7 @@ public class TCPClient {
 	
 	public void connect(String hostIp, int hostPort) {
 		if (myThread != null) return; // impossible de lancer 2+ fois connect()
+		remoteIP = hostIp;
 		myThread = new TCPClientThread(this, hostIp, hostPort, false);
 		new Thread(myThread).start();
 	}

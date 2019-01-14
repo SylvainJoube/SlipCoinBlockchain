@@ -92,7 +92,8 @@ class ApplicationServeur implements Runnable {
 				// Je crée le client du serveur
 				CustomServerClient servClient = new CustomServerClient(newTCPClient);
 				serverClientList.add(servClient);
-				
+
+				log("Nouveau client ! IP client = " + newTCPClient.getRemoteIP());
 				/*
 				System.out.println("Serveur : nouveau client - Liste des clients :");
 				for (int i = 0; i < serverClientList.size(); i++) {
@@ -285,6 +286,7 @@ class ApplicationClient implements Runnable {
 		}
 		if (! client.isConnected()) return;
 		
+		
 		NetBuffer demandeConnexionMessage = new NetBuffer();
 		demandeConnexionMessage.writeInt(1);
 		demandeConnexionMessage.writeString("Sylvie");
@@ -352,7 +354,7 @@ public class FullTest {
 		SCNode node = new SCNode(RSA.STR_PUBLIC_KEY, RSA.STR_PRIVATE_KEY);
 		//SCBlockData_transaction(int arg_amount, String arg_senderKey, String arg_receiverKey, boolean hasToSignTransaction, String senderPrivateKey, String arg_senderSignature);
 		SCBlockData_transaction transaction
-		  = new SCBlockData_transaction(78, RSA.STR_PUBLIC_KEY, "123456789", true, RSA.STR_PRIVATE_KEY, null);
+		  = new SCBlockData_transaction(78, RSA.STR_PUBLIC_KEY, "123456789", System.currentTimeMillis(), true, RSA.STR_PRIVATE_KEY, null);
 		System.out.println(transaction.toString());
 		System.out.println("Transaction valide : " + transaction.checkValidity());
 		transaction.receiverPublicKey = "123456779"; // petite erreur
@@ -363,8 +365,8 @@ public class FullTest {
 		System.out.println("Transaction valide : " + transaction.checkValidity());
 		
 		
-		
 		/*
+		
 		ApplicationServeur applicationServ = new ApplicationServeur();
 		ApplicationClient applicationClient = new ApplicationClient();
 		

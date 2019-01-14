@@ -13,6 +13,7 @@ public enum NetBufferDataType {
 	DOUBLE(3),
 	INTEGER(4),
 	BOOLEAN(5),
+	LONG(6),
 	UNKNOWN(0);
 	
 	private int typeId;
@@ -32,6 +33,7 @@ public enum NetBufferDataType {
 		case 3 : return DOUBLE;
 		case 4 : return INTEGER;
 		case 5 : return BOOLEAN;
+		case 6 : return LONG;
 		default : return UNKNOWN;
 		}
 	}

@@ -14,7 +14,7 @@ import slip.network.buffers.NetBuffer;
  */
 public interface SCBlockData {
 	
-	public boolean checkValidity();
+	public boolean checkSignatureValidity();
 	public String getAuthorPublicKey(); // L'identifiant de celui qui a émis cette donnée. Utile pour valider la donnée.
 	public SCBlockDataType getDataType();
 	public byte[] getRawByteArrayData(boolean withSignature);

@@ -11,12 +11,20 @@ public class NetBuffer { // fonctionnement synchrone, non thread-safe
 	private int currentReadPos = 0;
 	
 	private byte[] receivedRawData = null;
-	
+
 	public void writeInteger(int intData) {
 		NetBufferData newData = new NetBufferData(intData);
 		dataList.add(newData);
 	}
 	public void writeInt(int intData) { writeInteger(intData); }
+
+	public void writeLong(long longData) {
+		NetBufferData newData = new NetBufferData(longData);
+		dataList.add(newData);
+	}
+	public void writeInt64(long longData) {
+		writeLong(longData);
+	}
 	
 	public void writeDouble(double doubleData) {
 		NetBufferData newData = new NetBufferData(doubleData);
@@ -58,12 +66,22 @@ public class NetBuffer { // fonctionnement synchrone, non thread-safe
 		return data.integerData;
 	}
 	public int readInt() { return readInteger(); }
+
+	public double readLong() {
+		if (currentReadPos >= dataList.size()) return 0;
+		NetBufferData data = dataList.get(currentReadPos);
+		currentReadPos++;
+		if (data == null) return 0;
+		if (data.longData == null) return 0; // ne devrait pas arriver si le message est lu dans le bon ordre
+		return data.longData;
+	}
 	
 	public double readDouble() {
 		if (currentReadPos >= dataList.size()) return 0;
 		NetBufferData data = dataList.get(currentReadPos);
 		currentReadPos++;
-		if (data == null) return 0; // ne devrait pas arriver si le message est lu dans le bon ordre
+		if (data == null) return 0;
+		if (data.doubleData == null) return 0; // ne devrait pas arriver si le message est lu dans le bon ordre
 		return data.doubleData;
 	}
 	
@@ -111,6 +129,13 @@ public class NetBuffer { // fonctionnement synchrone, non thread-safe
 	public boolean currentData_isInt()        { return currentData_isInteger(); }
 	public boolean currentData_isStr()        throws IndexOutOfBoundsException { return currentData_isStr(); }
 	public boolean currentData_isBool()       throws IndexOutOfBoundsException { return currentData_isBool(); }
+	public boolean currentData_isLong() {
+		NetBufferData data = dataList.get(currentReadPos);
+		if (data.dataType.equals(NetBufferDataType.LONG))
+			return true;
+		return false;
+	}
+	
 	
 	//public boolean currentData_isInteger()    throws IndexOutOfBoundsException { NetBufferData data = dataList.get(currentReadPos); if (data.dataType.equals(NetBufferDataType.INTEGER))    return true; return false; }
 	//public boolean currentData_isInt()        throws IndexOutOfBoundsException { return currentData_isInteger(); }
@@ -253,6 +278,16 @@ public class NetBuffer { // fonctionnement synchrone, non thread-safe
 				NetBufferData boolData = new NetBufferData(booleanValue);
 				dataList.add(boolData);
 				break;
+				
+			case LONG :
+				byte[] longByteArray = new byte[8];
+				System.arraycopy(receivedRawData, currentPosInRawDataBuffer, longByteArray, 0, 8);
+				currentPosInRawDataBuffer += 8;
+				long longValue = NetBufferData.byteArrayToLong(longByteArray);
+				NetBufferData longData = new NetBufferData(longValue);
+				dataList.add(longData);
+				break;
+				
 			default : break;
 			}
 		}

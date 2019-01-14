@@ -13,13 +13,18 @@ public class NetBufferData {
 	public final NetBufferDataType dataType;
 	public Integer integerData = null;
 	public Double doubleData = null;
+	public Long longData = null;
 	public String stringData = null;
 	public Boolean booleanData = null;
 	public byte[] byteArrayData = null;
-	
+
 	public NetBufferData(int arg_intData) {
 		dataType = NetBufferDataType.INTEGER;
 		integerData = new Integer(arg_intData);
+	}
+	public NetBufferData(long arg_longData) {
+		dataType = NetBufferDataType.LONG;
+		longData = new Long(arg_longData);
 	}
 	public NetBufferData(double arg_doubleData) {
 		dataType = NetBufferDataType.DOUBLE;
@@ -148,6 +153,14 @@ public class NetBufferData {
 			else  resultBooleanByteArray[1] = (byte) 0;
 			return resultBooleanByteArray;
 			
+		case LONG :
+			long writeLong = 0;
+			if (longData != null) writeLong = longData.longValue();
+			ByteBuffer longByteBuff = ByteBuffer.allocate(1 + 8);
+			longByteBuff.put((byte) dataType.toInteger()); // type de la donnée
+			longByteBuff.putLong(writeLong);
+			return longByteBuff.array();
+			
 		default : return null;
 		}
 	}
@@ -171,13 +184,21 @@ public class NetBufferData {
 	public static byte[] doubleToByteArray(double doubleValue) {
 		return ByteBuffer.allocate(8).putDouble(doubleValue).array();
 	}
-	
+
 	public static double byteArrayToDouble(byte[] byteArray) {
 		if (byteArray.length != 8) {
 			System.out.println("GRAVE NetBuffer.byteArrayToDouble : byteArray.length(" + byteArray.length + ") != 8");
 			return 0;
 		}
 	    return ByteBuffer.wrap(byteArray).getDouble();
+	}
+
+	public static long byteArrayToLong(byte[] byteArray) {
+		if (byteArray.length != 8) {
+			System.out.println("GRAVE NetBuffer.byteArrayToLong : byteArray.length(" + byteArray.length + ") != 8");
+			return 0;
+		}
+	    return ByteBuffer.wrap(byteArray).getLong();
 	}
 
 	/*

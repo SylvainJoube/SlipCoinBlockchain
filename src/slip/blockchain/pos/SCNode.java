@@ -9,7 +9,12 @@ import java.util.ArrayList;
  * Elle a l'ID de celui qui la possède
  *
  */
+
 public class SCNode {
+
+	public static final double initialWalletAmount = 10;
+	
+	//public static mainNode = keurkeur
 	
 	// Liste des données en attente d'insertion dans la chaîne (trasations reçues d'autres cellules + mes transactions)
 	private ArrayList<SCBlockData> bufferedDataList = new ArrayList<SCBlockData>();
@@ -31,33 +36,60 @@ public class SCNode {
 	// + tard : faire que l'intégralité de la chaîne ne soit pas chargée en mémoire vive mais reste sur le disque
 	
 	/** Récupérer l'argent dispo dans le compte d'une personne, depuis la blockchain
+	 * Plus tard, il serait envisagable de faire des blocs signés par l'ensemble du réseau (51+%) pour faire un récapitulatif des wallets
 	 * @param ownerPublicKey
 	 * @return
 	 */
-	public int getWalletAmount(String ownerPublicKey) {
-		int ownedAmount = 0;
+	public double getWalletAmount(String ownerPublicKey) { // , boolean alsoUseBuffer)
+		double ownedAmount = 0 + SCNode.initialWalletAmount; // montant initial (pour pouvoir faire des transactions dès le début
+		// Montant dans la blockchain
 		for (int iBlock = 0; iBlock < blockChain.size(); iBlock++) {
 			SCBlock block = blockChain.get(iBlock);
-			
+			ownedAmount += block.getWalletVariation(ownerPublicKey);
 		}
 		
+		// if (alsoUseBuffer) toujours utiliser son buffer des transactions pas encore dans la chaîne
+		for (int iBufferedData = 0; iBufferedData < bufferedDataList.size(); iBufferedData++) {
+			SCBlockData data = bufferedDataList.get(iBufferedData);
+			if (data.getDataType().equals(SCBlockDataType.TRANSACTION)) {
+				SCBlockData_transaction transaction = (SCBlockData_transaction) data;
+				ownedAmount += transaction.getWalletVariationForUser(ownerPublicKey);
+			}
+		}
+		return ownedAmount;
 	}
 	
 	/** Vérifier une transaction avec la blockchain et le buffer dont je dispose à l'heure actuelle
 	 *  Je re-calcule le montant possédé par l'envoyeur de la transaction et je vérifie qu'il l'a bien
 	 * @return
 	 */
-	public boolean checkTransactionAmount(SCBlockData_transaction transaction) {
+	public boolean checkTransactionAmountValidity(SCBlockData_transaction transaction) {
 		if (transaction == null) return false;
 		if (transaction.criticalErrorOccured) return false;
-		if (transaction.checkValidity() == false) return false;
-		return true;// TODO
+		if (transaction.checkSignatureValidity() == false) return false;
+		if (transaction.amount <= 0) return false;
+		String senderKey = transaction.senderPublicKey;
+		double senderWalletAmount = getWalletAmount(senderKey);
+		if (senderWalletAmount < transaction.amount) {
+			return false; // fonds insuffisants
+		}
+		return true;
 	}
 	
 	/** Ajout de donnée au buffer de la cellule (réception de donnée à ajouter, ou création)
 	 * @param newData donnée à ajouter au buffer
+	 * @return vrai si la donnée a été ajoutée au buffer et qu'elle n'était pas présente dans la 
 	 */
-	public void addToDataBuffer(SCBlockData newData) {
+	public boolean addToDataBuffer(SCBlockData newData) {
+		
+		// Cas de l'ajout d'une transaction
+		if (newData.getDataType().equals(SCBlockDataType.TRANSACTION)) {
+			
+			
+			
+		}
+			
+		
 		// 1) Vérifier que la donnée est bien valide (avec la signature de l'auteur qui l'a émise)
 		// 2) Regarder si la donnée est déjà dans le buffer
 		// 3) Regarder si la donnée est déjà dans la blockchain
@@ -72,15 +104,15 @@ public class SCNode {
 		
 		//if (bufferedDataList.size() == 0) return false; // ne pas créer inutilement de bloc vide !
 		
-		String previousBlockHash = "0";
+		String previousBlockSignature = "0";
 		if (blockChain.size() != 0) {
 			SCBlock previousBlock = blockChain.get(blockChain.size() - 1);
-			previousBlockHash = previousBlock.getMyHash();
+			previousBlockSignature = previousBlock.getPreviousBlockSinature();
 		}
 		// Avant : bien vérifier que dans ma chaîne, il n'y a aucune donnée identique à celle que j'ai dans mon buffer
 		
 		// Toutes les transactions du buffer sont supposées valides (je n'ajoute aucune transaction à mon buffer)
-		SCBlock newBlock = new SCBlock(previousBlockHash, nodeOwnerPublicKey);
+		SCBlock newBlock = new SCBlock(previousBlockSignature, nodeOwnerPublicKey);
 		for (int iBuffData = 0; iBuffData < bufferedDataList.size(); iBuffData++) {
 			newBlock.addData(bufferedDataList.get(iBuffData));
 		}
@@ -101,7 +133,7 @@ public class SCNode {
 	 * 
 	 */
 	public void receiveNewBlockChain() {
-		// 1) Jé vérifie la chaîne reçue : s'il y a la moindre erreur dans la signature des blocs, je l'ignore totalement
+		// 1) Je vérifie la chaîne reçue : s'il y a la moindre erreur dans la signature des blocs, je l'ignore totalement
 		// 2) Si ce n'est qu'un ajout de blocs par rapport à la mienne, OK, je met à jour ma chaîne
 		// 3) S'il y a conflit : si ma chaîne est la plus longue, je l'ignore
 		// 4) Si ma chaine est plus courte mais qu'il y a des blocs en conflit : je reprends toutes les données dans mon buffer

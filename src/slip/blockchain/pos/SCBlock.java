@@ -5,34 +5,48 @@ import java.util.ArrayList;
 import slip.network.buffers.NetBuffer;
 import slip.security.common.RSA;
 
+
+// Pour une meilleure visibilité, signature des méthodes :
+interface SCBlockInterafce {
+	public String getPreviousBlockSinature();
+	public String getAuthorPublicKey();
+	public void readFromNetBuffer(NetBuffer readFromNetBuff, boolean hasBlockSignature);
+	public NetBuffer writeToNetBuffer(boolean includeBlockSignature);
+	public boolean signBlock(String authorPrivateKey);
+	public String computeHash();
+	public boolean checkWithBlockSignature();
+	public double getWalletVariation(String ownerPublicKey);
+	
+	
+}
+
 /**
  * Un bloc de la chaine
  *
  */
-public class SCBlock {
+public class SCBlock implements SCBlockInterafce {
+	
+	public final double rewardPerBlockCreation = 0.1;
 	
 	private String previousBlockSignature; // l'ID du dernier bloc
 	private String authorPublicKey; // L'identifiant de l'auteur du bloc = adresse de l'auteur du bloc
 	private String blockSignature; // 
+	// -> ajout d'un timeStamp ? pas forcément nécessaire
 	private ArrayList<SCBlockData> myData = new ArrayList<SCBlockData>(); // Liste des données (entre autre : les transactions)
 	// Le temps n'est pas utile ici (pour l'instant, du moins)
 	
 	
-	
-	private String myHash; // Hash de ce bloc (garantit qu'il ne peut pas être modifié)
-	
-	private byte[] dataAsByteArray;
-	private NetBuffer blockAsNetBuffer;
-	private byte[] blockAsByteArray;
-	
+	//private String myHash; recalculé à chaque fois // Hash de ce bloc (garantit qu'il ne peut pas être modifié)
 	private boolean criticalErrorOccured = false;
 	
-	public String getPreviousHash() {
+	
+	
+	public String getPreviousBlockSinature() {
 		return previousBlockSignature;
 	}
-	public String getMyHash() { // Demander du hash à cet objet (le constituer, le "faire pousser")
-		return myHash;
-	}
+	/*public String getMyHash() {
+		return myHash; UNSAFE -> remplacée par computeHash(); toujours recalculer le hash
+	}*/
 	public String getAuthorPublicKey() {
 		return authorPublicKey;
 	}
@@ -104,7 +118,7 @@ public class SCBlock {
 		return RSA.sha256(fullBlockDataAsByteArray);
 	}
 	
-	/** 
+	/** Vérifier la validité du bloc avec la signature et la clef publique de son créateur
 	 * @return
 	 */
 	public boolean checkWithBlockSignature() {
@@ -138,10 +152,27 @@ public class SCBlock {
 		myData.add(newDataToAdd);
 	}
 	
-	public int getWalletVariation() {
-		
+	/** Récupérer le montant du portefeuille d'un utilisateur de la chaine
+	 *  
+	 * @param ownerPublicKey
+	 * @return
+	 */
+	public double getWalletVariation(String ownerPublicKey) {
+		if (ownerPublicKey == null) return 0;
+		double ownerVariation = 0;
+		if (authorPublicKey.equals(ownerPublicKey)) { // créateur du bloc
+			ownerVariation += rewardPerBlockCreation;
+		}
+		// Pour toutes les transactions, je regarde si l'utilisateur est intervenu
+		for (int iData = 0; iData < myData.size(); iData++) {
+			SCBlockData data = myData.get(iData);
+			if (data.getDataType().equals(SCBlockDataType.TRANSACTION)) {
+				SCBlockData_transaction transaction = (SCBlockData_transaction) data;
+				ownerVariation += transaction.getWalletVariationForUser(ownerPublicKey); // 0 si l'utilisateur n'est pas impliqué dans l'échange
+			}
+		}
+		return ownerVariation;
 	}
-	
 	
 	/*public SCBlock(String arg_previousHash, String arg_authorPublicKey, String arg_authorPrivateKey, ArrayList<SCBlockData> arg_myData) {
 		previousBlockSignature = arg_previousHash;
