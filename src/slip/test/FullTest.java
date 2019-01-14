@@ -356,13 +356,19 @@ public class FullTest {
 		SCBlockData_transaction transaction
 		  = new SCBlockData_transaction(78, RSA.STR_PUBLIC_KEY, "123456789", System.currentTimeMillis(), true, RSA.STR_PRIVATE_KEY, null);
 		System.out.println(transaction.toString());
-		System.out.println("Transaction valide : " + transaction.checkValidity());
+		System.out.println("Transaction valide : " + transaction.checkSignatureValidity());
 		transaction.receiverPublicKey = "123456779"; // petite erreur
-		System.out.println("Transaction valide : " + transaction.checkValidity());
+		System.out.println("Transaction valide : " + transaction.checkSignatureValidity());
 		transaction.receiverPublicKey = "méchant_voleur"; // vilain, vilain
-		System.out.println("Transaction valide : " + transaction.checkValidity());
+		System.out.println("Transaction valide : " + transaction.checkSignatureValidity());
 		transaction.receiverPublicKey = "123456789"; // retour à la normale
-		System.out.println("Transaction valide : " + transaction.checkValidity());
+		System.out.println("Transaction valide : " + transaction.checkSignatureValidity());
+
+		node.assembleNewBlockWithBufferedData();
+		node.assembleNewBlockWithBufferedData();
+		
+		System.out.println("Solde = " + node.getWalletAmount(RSA.STR_PUBLIC_KEY));
+		
 		
 		
 		/*

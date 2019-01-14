@@ -8,7 +8,7 @@ import slip.security.common.RSA;
 
 // Pour une meilleure visibilité, signature des méthodes :
 interface SCBlockInterafce {
-	public String getPreviousBlockSinature();
+	public String getPreviousBlockSignature();
 	public String getAuthorPublicKey();
 	public void readFromNetBuffer(NetBuffer readFromNetBuff, boolean hasBlockSignature);
 	public NetBuffer writeToNetBuffer(boolean includeBlockSignature);
@@ -41,9 +41,12 @@ public class SCBlock implements SCBlockInterafce {
 	private boolean criticalErrorOccured = false;
 	
 	
-	
-	public String getPreviousBlockSinature() {
+
+	public String getPreviousBlockSignature() {
 		return previousBlockSignature;
+	}
+	public String getBlockSignature() { // != signBlock()
+		return blockSignature;
 	}
 	/*public String getMyHash() {
 		return myHash; UNSAFE -> remplacée par computeHash(); toujours recalculer le hash

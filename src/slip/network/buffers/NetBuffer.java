@@ -63,7 +63,6 @@ public class NetBuffer { // fonctionnement synchrone, non thread-safe
 	// Les Read retournent une exception si on tente de lire un 
 	
 	
-	
 	public int readInteger() { // unsafe : throws IndexOutOfBoundsException
 		if (currentReadPos >= dataList.size()) return 0;
 		NetBufferData data = dataList.get(currentReadPos);
