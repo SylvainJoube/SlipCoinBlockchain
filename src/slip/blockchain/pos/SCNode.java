@@ -155,7 +155,7 @@ public class SCNode {
 		String previousBlockSignature = "0";
 		if (blockChain.size() != 0) {
 			SCBlock previousBlock = blockChain.get(blockChain.size() - 1);
-			previousBlockSignature = previousBlock.getPreviousBlockSinature();
+			previousBlockSignature = previousBlock.getBlockSignature();
 		}
 		// Avant : bien vérifier que dans ma chaîne, il n'y a aucune donnée identique à celle que j'ai dans mon buffer
 		
@@ -178,18 +178,35 @@ public class SCNode {
 	}
 	
 	
+	
 	public static boolean checkBlockChainValidity(ArrayList<SCBlock> receivedBlockChain) {
 		if (receivedBlockChain == null) return false;
 		if (receivedBlockChain.size() == 0) return false; // test
 		//String previousBlockSignature = receivedBlockChain.get(0).getBlockSinature();
-		String previousBlockSignature;
+		// Je vérifie la validité des blocs
+		
 		for (int iBlock = 0; iBlock < receivedBlockChain.size(); iBlock++) { // (SCBlock block : receivedBlockChain)
 			SCBlock block = receivedBlockChain.get(iBlock);
 			if (! block.checkWithBlockSignature()) return false; // bloc invalide
-			previousBlockSignature = block.getPreviousBlockSignature();
-			
 		}
-		
+		// Je vérifie que tous les blocs se suivent
+		for (int iBlock = receivedBlockChain.size() - 1; iBlock >= 1; iBlock--) {
+			SCBlock previousBlock = receivedBlockChain.get(iBlock - 1);
+			SCBlock currentBlock = receivedBlockChain.get(iBlock);
+			
+			String previousBlockSignature = previousBlock.getBlockSignature();
+			String previousBlockSignatureStoredInCurrentBlock = currentBlock.getPreviousBlockSignature();
+			
+			if (! previousBlockSignature.equals(previousBlockSignatureStoredInCurrentBlock)) {
+				//System.out.println("ERREUR SCNode.checkBlockChainValidity : previousBlockSignature not equals previousBlockSignatureStoredInCurrentBlock");
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public boolean checkMyBlockChain() {
+		return checkBlockChainValidity(blockChain);
 	}
 	
 	
@@ -222,6 +239,8 @@ public class SCNode {
 		
 	}
 	
+	
+	public 
 	
 	
 	

@@ -363,11 +363,18 @@ public class FullTest {
 		System.out.println("Transaction valide : " + transaction.checkSignatureValidity());
 		transaction.receiverPublicKey = "123456789"; // retour à la normale
 		System.out.println("Transaction valide : " + transaction.checkSignatureValidity());
-
+		
+		
+		
+		node.assembleNewBlockWithBufferedData();
+		node.assembleNewBlockWithBufferedData();
+		node.assembleNewBlockWithBufferedData();
+		node.assembleNewBlockWithBufferedData();
 		node.assembleNewBlockWithBufferedData();
 		node.assembleNewBlockWithBufferedData();
 		
 		System.out.println("Solde = " + node.getWalletAmount(RSA.STR_PUBLIC_KEY));
+		System.out.println("Chaine intègre = " + node.checkMyBlockChain());
 		
 		
 		
