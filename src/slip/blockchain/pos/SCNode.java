@@ -177,8 +177,11 @@ public class SCNode {
 		
 	}
 	
+	
+	
 	/** Réception d'une blockchain concurrente à la mienne
 	 * 
+	 * -> ma blockchain va être réarrangée
 	 */
 	public void receiveNewBlockChain() {
 		// 1) Je vérifie la chaîne reçue : s'il y a la moindre erreur dans la signature des blocs, je l'ignore totalement
@@ -196,6 +199,8 @@ public class SCNode {
 		// Pour ne pas faire de boucle, -> TTL + je hash cette blockchain et je garde une liste des hash que j'ai déjà transmis pour ne pas retransmettre indéfiniment
 		
 	}
+	
+	
 	
 	
 	

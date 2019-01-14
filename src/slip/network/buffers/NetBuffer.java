@@ -53,6 +53,13 @@ public class NetBuffer { // fonctionnement synchrone, non thread-safe
 	public void rewind() {
 		setPosition(0);
 	}
+	
+	/** Dernière position valide dans le buffer
+	 * @return -1 si aucune donnée dans le buffer, le dernier index valide sinon
+	 */
+	public int getLastIndex() {
+		return dataList.size() - 1;
+	}
 	// Les Read retournent une exception si on tente de lire un 
 	
 	
