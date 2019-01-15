@@ -360,6 +360,8 @@ public class FullTest {
 	
 	public static void main(String[] args) throws InterruptedException {
 		
+		
+		
 		SCNode node = new SCNode(RSA.STR_PUBLIC_KEY, RSA.STR_PRIVATE_KEY);
 		//SCBlockData_transaction(int arg_amount, String arg_senderKey, String arg_receiverKey, boolean hasToSignTransaction, String senderPrivateKey, String arg_senderSignature);
 		SCBlockData_transaction transaction
@@ -418,8 +420,14 @@ public class FullTest {
 		System.out.println("Transaction : Sylvain -> Prof de Java : réussite = " + success);
 		showWallets(a1Wallet, node);
 
-		System.out.println(" --- Sylvain mine des blocs --- ");
+		System.out.println("Node : node.get_bufferedDataList_size() = " + node.get_bufferedDataList_size()); // transactions en attente dans le buffer
+		System.out.println("Node : node.get_blockChain_size() = " + node.get_blockChain_size()); // nombre de blocs dans le blockchain
+		System.out.println(" --- Sylvain mine des blocs --- "); // Ecriture des transactions dans les blocs
+		
 		node.assembleNewBlockWithBufferedData(walletSylvain.getPublicKey(), walletSylvain.getPrivateKey());
+
+		System.out.println("Node : node.get_bufferedDataList_size() = " + node.get_bufferedDataList_size());
+		System.out.println("Node : node.get_blockChain_size() = " + node.get_blockChain_size());
 		node.assembleNewBlockWithBufferedData(walletSylvain.getPublicKey(), walletSylvain.getPrivateKey());
 		node.assembleNewBlockWithBufferedData(walletSylvain.getPublicKey(), walletSylvain.getPrivateKey());
 		node.assembleNewBlockWithBufferedData(walletSylvain.getPublicKey(), walletSylvain.getPrivateKey());

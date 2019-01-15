@@ -33,6 +33,13 @@ public class SCNode {
 		nodeOwnerPublicKey = arg_ownerPublicKey;
 		nodeOwnerPrivateKey = arg_ownerPrivateKey;
 	}
+
+	public int get_bufferedDataList_size() {
+		return bufferedDataList.size();
+	}
+	public int get_blockChain_size() {
+		return blockChain.size();
+	}
 	
 	// + charger du disque ma chaîne
 	// + tard : faire que l'intégralité de la chaîne ne soit pas chargée en mémoire vive mais reste sur le disque
@@ -252,13 +259,16 @@ public class SCNode {
 		
 		
 		// 1) Je vérifie la chaîne reçue : s'il y a la moindre erreur dans la signature des blocs, je l'ignore totalement
-		// 1.5) Je regarde si j'ai le premier bloc de la chaine
+		// 1.5) Je regarde si j'ai le premier bloc de la chaine (quelque part dans ma chaîne) -> Les blocs suivant doivent correspondre à ceux de ma chaîne, sinon, on se retrouve dans une des sitiations décrites en 4, 5 et 6
+		//        -> si je n'ai pas le premier bloc de la chaine envoyée dans ma chaine à moi, je demande les blocs précédents à l'autre
 		// 2) Si ce n'est qu'un ajout de blocs par rapport à la mienne, OK, je met à jour ma chaîne
-		// 3) S'il y a conflit : si ma chaîne est la plus longue, je l'ignore, je l'envoie à celui qui vient de m'envoyer sa chaîne
+		// 3) S'il y a conflit : si ma chaîne est la plus longue, je l'ignore, j'envoie ma chaîne à celui qui vient de m'envoyer sa chaîne
 		// 4) Si ma chaine est plus courte mais qu'il y a des blocs en conflit : je reprends toutes les données dans mon buffer
 		///    je supprime mes blocs de ma chaîne et j'accepte cette autre chaîne, je re-broadcast les données qui ne sont plus dans ma chaîne
-		// 5) Si ma chaine est de même taille (blocs) : je conserve la chaîne de plus grande taille totale (octets)
+		// 5) Si ma chaine est de même taille (blocs) : je conserve la chaîne de plus grande taille totale (octets) et je fais comme en 4) (broadcast des transactions)
 		// 6) Si ma chaine a été changée (et donc validée), je relaye l'information : nouvelle chaîne
+		
+		// 7) -> j'ai probablement oublié des cas ! ^^'
 		return result;
 	}
 	

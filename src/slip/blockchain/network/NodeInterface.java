@@ -17,7 +17,7 @@ public class NodeInterface {
 	private SCNode node;
 	private ArrayList<NodeClient> nodeClients;
 	private TCPServer nodeServer;
-	private ArrayList<NetAddress> AddressBook;
+	//private ArrayList<NetAddress> AddressBook;
 	
 	public NodeInterface(int tcpPort) {
 		nodeServer = new TCPServer(tcpPort);
@@ -79,11 +79,11 @@ public class NodeInterface {
 	}
 	
 	public void broadcastMessage(NetBuffer toTransmit) {
-		for (NetAddress address : AddressBook) {
+		/*for (NetAddress address : AddressBook) {
 			TCPClient client = new TCPClient(address.getIp(), address.getPort());
 			client.sendMessage(toTransmit);
 			while 
-		}
+		}*/
 	}
 	public NetBuffer receiveData(NetBuffer data) throws Error {
 		if (!data.currentData_isInt()) {
@@ -105,7 +105,7 @@ public class NodeInterface {
 					} else {
 						NetBuffer toSend = transaction.writeToNetBuffer(true);
 						NetBufferData newData = new NetBufferData(1);
-						toSend.insertAtPos(0, newData);
+						//toSend.insertAtPos(0, newData);
 						return toSend;
 					}
 				} else {
@@ -116,14 +116,14 @@ public class NodeInterface {
 		}
 	}
 	
-	public void addAddressToBook(String ip, int port) {
+	public void addAddressToBook(String ip, int port) {/*
 		NetAddress toAdd = new NetAddress(ip, port);
 		for(NetAddress netAddress : AddressBook) {
 			if (toAdd.toString().equals(netAddress.toString())) {
 				return;
 			}
 		}
-		AddressBook.add(toAdd);
+		AddressBook.add(toAdd);*/
 	}
 	
 	
