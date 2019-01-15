@@ -9,6 +9,7 @@ import slip.security.common.RSA;
 // Pour une meilleure visibilité, signature des méthodes :
 interface SCBlockInterafce {
 	public String getPreviousBlockSignature();
+	public String getBlockSignature();
 	public String getAuthorPublicKey();
 	public void readFromNetBuffer(NetBuffer readFromNetBuff, boolean hasBlockSignature);
 	public NetBuffer writeToNetBuffer(boolean includeBlockSignature);
@@ -53,6 +54,10 @@ public class SCBlock implements SCBlockInterafce {
 	}*/
 	public String getAuthorPublicKey() {
 		return authorPublicKey;
+	}
+	
+	public ArrayList<SCBlockData> getData() {
+		return this.myData;
 	}
 	
 	/*public static ArrayList<SCBlockData> cloneDataList() {
@@ -193,8 +198,9 @@ public class SCBlock implements SCBlockInterafce {
 			}
 		}
 		return false; // Aucune correspondance si je suis arrivé ici
-		
 	}
+	
+	//permet de check la présence d'une transaction dans un bloc passé en arg
 	
 	/*public SCBlock(String arg_previousHash, String arg_authorPublicKey, String arg_authorPrivateKey, ArrayList<SCBlockData> arg_myData) {
 		previousBlockSignature = arg_previousHash;
