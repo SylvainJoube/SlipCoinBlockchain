@@ -2,6 +2,7 @@ package slip.test;
 
 import java.util.ArrayList;
 
+import slip.blockchain.network.NodeThread;
 import slip.blockchain.pos.SCBlockData_transaction;
 import slip.blockchain.pos.SCCoinWallet;
 import slip.blockchain.pos.SCNode;
@@ -360,9 +361,18 @@ public class FullTest {
 	
 	public static void main(String[] args) throws InterruptedException {
 		
+
+		SCCoinWallet walletNode1 = SCCoinWallet.createNewWallet("Node 1 owner");
+		SCCoinWallet walletNode2 = SCCoinWallet.createNewWallet("Node 2 owner");
+		SCCoinWallet walletNode3 = SCCoinWallet.createNewWallet("Node 3 owner");
+		
+		SCNode node = new SCNode(walletNode1.getPublicKey(), walletNode1.getPrivateKey());//RSA.STR_PUBLIC_KEY, RSA.STR_PRIVATE_KEY);
+		
+		SCNode node2 = new SCNode(walletNode2.getPublicKey(), walletNode2.getPrivateKey());//RSA.STR_PUBLIC_KEY, RSA.STR_PRIVATE_KEY);
+		SCNode node3 = new SCNode(walletNode3.getPublicKey(), walletNode3.getPrivateKey());//RSA.STR_PUBLIC_KEY, RSA.STR_PRIVATE_KEY);
 		
 		
-		SCNode node = new SCNode(RSA.STR_PUBLIC_KEY, RSA.STR_PRIVATE_KEY);
+		
 		//SCBlockData_transaction(int arg_amount, String arg_senderKey, String arg_receiverKey, boolean hasToSignTransaction, String senderPrivateKey, String arg_senderSignature);
 		SCBlockData_transaction transaction
 		  = new SCBlockData_transaction(78, RSA.STR_PUBLIC_KEY, "123456789", System.currentTimeMillis(), true, RSA.STR_PRIVATE_KEY, null);
@@ -441,6 +451,12 @@ public class FullTest {
 		node.assembleNewBlockWithBufferedData(walletAntonin.getPublicKey(), walletAntonin.getPrivateKey());
 		node.assembleNewBlockWithBufferedData(walletAntonin.getPublicKey(), walletAntonin.getPrivateKey());
 		showWallets(a1Wallet, node);
+		
+
+		NodeThread node2Thread = new NodeThread(node2, 3334);
+		NodeThread node3Thread = new NodeThread(node3, 3337);
+		new Thread(node2Thread).start();
+		new Thread(node3Thread).start();
 		
 		
 		if (true) return;

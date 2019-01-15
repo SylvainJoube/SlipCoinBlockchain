@@ -100,7 +100,8 @@ public class TCPServer {
 	/** Stopper le serveur, déconnecter tous les clients, arrêter tous les threads. VSNS
 	 */
 	public void stop() {
-		acceptThread.close();
+		if (acceptThread != null)
+			acceptThread.close();
 		synchronized(clientList_notYetAccepted_Lock) {
 			for (int iClient = 0; iClient < clientList_accepted.size(); iClient++) {
 				clientList_accepted.get(iClient).stop();
