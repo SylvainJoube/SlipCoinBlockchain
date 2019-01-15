@@ -22,7 +22,11 @@ public class SCNode {
 	
 	// Liste des données en attente d'insertion dans la chaîne (trasations reçues d'autres cellules + mes transactions)
 	private ArrayList<SCBlockData> bufferedDataList = new ArrayList<SCBlockData>();
-	private ArrayList<SCBlock> blockChain = new ArrayList<SCBlock>(); // C'est plutôt une "blockArrayList" dans ce cas... J'aurais aussi pu utiliser une LinkedList pour rester dans le thème !
+	public ArrayList<SCBlock> blockChain = new ArrayList<SCBlock>(); // C'est plutôt une "blockArrayList" dans ce cas... J'aurais aussi pu utiliser une LinkedList pour rester dans le thème !
+	
+	public ArrayList<SCBlock> debugGetBlockchain() {
+		return blockChain;
+	}
 	
 	// + Liste des transactions déjà broadcastées (pour ne pas les ré-émettre)
 	
@@ -293,7 +297,7 @@ public class SCNode {
 		if(!(checkBlockChainValidity(receivedBlockChain) && checkMyBlockChain())) {
 			return;
 		}
-		
+		//System.out.println("receiveNewBlockChainPart : 1");
 		// 1.5) Je regarde si j'ai le premier bloc de la chaine (quelque part dans ma chaîne) 
 		//-> Les blocs suivant doivent correspondre à ceux de ma chaîne, sinon, on se retrouve dans une des sitiations décrites en 4, 5 et 6
 		//-> si je n'ai pas le premier bloc de la chaine envoyée dans ma chaine à moi, je demande les blocs précédents à l'autre
@@ -303,11 +307,13 @@ public class SCNode {
 		int indexBlockBeggining = 0;
 		for (SCBlock aBlock : myBlockChain) {
 			if (aBlock.getBlockSignature().equals(firstBlockSignature)) {
+				//System.out.println("receiveNewBlockChainPart : isInBlockChain = true");
 				isInBlockChain = true;
 				break;
 			}
 			indexBlockBeggining++;
 		}
+		//System.out.println("receiveNewBlockChainPart : 2");
 		boolean chainMismatch = false;
 		if (!isInBlockChain) {
 			if (receivedBlockChain.get(0).getPreviousBlockSignature().equals("0")) {
@@ -328,6 +334,7 @@ public class SCNode {
 				indexToParse++;
 			}
 		}
+		//System.out.println("receiveNewBlockChainPart : 3");
 		if (chainMismatch) {
 			if (myBlockChain.size() > receivedBlockChain.size()) {
 				if (receivedBlockChain.get(0).getPreviousBlockSignature().equals("0")) {
@@ -354,6 +361,9 @@ public class SCNode {
 					} else if (myBlockChainSizeAsByte <= receivedBlockChainSizeAsByte) {
 						this.blockChain = receivedBlockChain;
 						ArrayList<SCBlockData> toAdd = diffBlockChain(receivedBlockChain); //contient les données non présentes dans l'autre blockChain
+						for (SCBlockData data : toAdd) {
+							addToDataBuffer(data);
+						}
 						//broadcast le toAdd
 					}
 				}
@@ -363,6 +373,9 @@ public class SCNode {
 				if (receivedBlockChain.get(0).getPreviousBlockSignature().equals("0")) {
 					ArrayList<SCBlockData> toAdd = diffBlockChain(receivedBlockChain); //contient les données non présentes dans l'autre blockChain
 					this.blockChain = receivedBlockChain;
+					for (SCBlockData data : toAdd) {
+						addToDataBuffer(data);
+					}
 					//broadcast le toAdd
 				}
 				return;
@@ -385,6 +398,7 @@ public class SCNode {
 				}
 			}
 		}
+		//System.out.println("receiveNewBlockChainPart : 4");
 		// 2) Si ce n'est qu'un ajout de blocs par rapport à la mienne, OK, je met à jour ma chaîne
 		// 3) S'il y a conflit : si ma chaîne est la plus longue, je l'ignore, j'envoie ma chaîne à celui qui vient de m'envoyer sa chaîne
 		// 4) Si ma chaine est plus courte mais qu'il y a des blocs en conflit : je reprends toutes les données dans mon buffer

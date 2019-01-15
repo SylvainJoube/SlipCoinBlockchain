@@ -59,7 +59,6 @@ class ApplicationServeur implements Runnable {
 		return true;
 	}
 	
-
 	public static void sleep(long millisec) {
 		try { Thread.sleep(millisec); } catch (InterruptedException e1) {
 			e1.printStackTrace();
@@ -373,6 +372,8 @@ public class FullTest {
 		
 		
 		
+		
+		
 		//SCBlockData_transaction(int arg_amount, String arg_senderKey, String arg_receiverKey, boolean hasToSignTransaction, String senderPrivateKey, String arg_senderSignature);
 		SCBlockData_transaction transaction
 		  = new SCBlockData_transaction(78, RSA.STR_PUBLIC_KEY, "123456789", System.currentTimeMillis(), true, RSA.STR_PRIVATE_KEY, null);
@@ -390,6 +391,16 @@ public class FullTest {
 		SCCoinWallet walletLong = SCCoinWallet.createNewWallet("Long");
 		SCCoinWallet walletAntonin = SCCoinWallet.createNewWallet("Antonin");
 		SCCoinWallet walletProfDeJava = SCCoinWallet.createNewWallet("LaProfDeJava!");
+		
+
+		/*Pour le test de IdenticalTimeSnap
+		 * node.newTransaction(3.421, walletEtienne.getPrivateKey(), walletEtienne.getPublicKey(), walletSylvain.getPublicKey());
+		node2.newTransaction(3.421, walletEtienne.getPrivateKey(), walletEtienne.getPublicKey(), walletSylvain.getPublicKey());
+		node3.newTransaction(3.421, walletEtienne.getPrivateKey(), walletEtienne.getPublicKey(), walletSylvain.getPublicKey());
+		node.assembleNewBlockWithBufferedData(walletSylvain.getPublicKey(), walletSylvain.getPrivateKey());
+		node2.assembleNewBlockWithBufferedData(walletSylvain.getPublicKey(), walletSylvain.getPrivateKey());
+		node3.assembleNewBlockWithBufferedData(walletSylvain.getPublicKey(), walletSylvain.getPrivateKey());*/
+		
 		
 		ArrayList<SCCoinWallet> a1Wallet = new ArrayList<SCCoinWallet>();
 		a1Wallet.add(walletEtienne);
@@ -452,11 +463,22 @@ public class FullTest {
 		node.assembleNewBlockWithBufferedData(walletAntonin.getPublicKey(), walletAntonin.getPrivateKey());
 		showWallets(a1Wallet, node);
 		
-
-		NodeThread node2Thread = new NodeThread(node2, 3334);
+		// receiveNewBlockChainPart
+		
+		node2.newTransaction(1.421, walletAntonin.getPrivateKey(), walletAntonin.getPublicKey(), walletSylvain.getPublicKey());
+		node2.newTransaction(0.42, walletLong.getPrivateKey(), walletLong.getPublicKey(), walletSylvain.getPublicKey());
+		node2.assembleNewBlockWithBufferedData(walletLong.getPublicKey(), walletLong.getPrivateKey());
+		node2.receiveNewBlockChainPart(node.debugGetBlockchain());
+		
+		System.out.println(" --- Synchronisation des blockchains --- ");
+		showWallets(a1Wallet, node2);
+		
+		
+		
+		/*NodeThread node2Thread = new NodeThread(node2, 3334);
 		NodeThread node3Thread = new NodeThread(node3, 3337);
 		new Thread(node2Thread).start();
-		new Thread(node3Thread).start();
+		new Thread(node3Thread).start();*/
 		
 		
 		if (true) return;
