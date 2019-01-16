@@ -35,11 +35,22 @@ public class SCNode {
 	
 	private ArrayList<SCNodeAddress> linkedToHosts = new ArrayList<SCNodeAddress>();
 	
+	/** Créer un noeud, en spéficiant les clefs de celui qui le possède (pour la singature d'une création de bloc)
+	 * @param arg_ownerPublicKey   clef publique du portefeuille du possesseur du noeud
+	 * @param arg_ownerPrivateKey  clef privée du portefeuille du possesseur du noeud
+	 */
 	public SCNode(String arg_ownerPublicKey, String arg_ownerPrivateKey) {
 		nodeOwnerPublicKey = arg_ownerPublicKey;
 		nodeOwnerPrivateKey = arg_ownerPrivateKey;
 	}
-
+	
+	/** Créer un noeud en indiquand le portefeuille de celui qui le crée
+	 * @param walletOfOwner  portefeuille du propriétaire du noeud (pour la singature lors des créations de bloc)
+	 */
+	public SCNode(SCCoinWallet walletOfOwner) {
+		this(walletOfOwner.getPublicKey(), walletOfOwner.getPrivateKey());
+	}
+	
 	public int get_bufferedDataList_size() {
 		return bufferedDataList.size();
 	}
@@ -291,6 +302,20 @@ public class SCNode {
 	 * -> ma blockchain va être réarrangée
 	 */
 	public void receiveNewBlockChainPart(ArrayList<SCBlock> receivedBlockChain) {
+		
+		// Plus tard, il serait bon de procéder ainsi : (pour essayer d'avoir une seule chaine identique partout)
+		
+		// 1) Vérifier la validité de la chaîne reçue (signature blocs et transactions)
+		// 2) Je regarde si j'ai le premier bloc de la chaine (quelque part dans ma chaîne) 
+		// 3) Si ce n'est qu'un ajout de blocs par rapport à la mienne, OK, je met à jour ma chaîne
+		// 4) S'il y a conflit : si ma chaîne est la plus longue, je l'ignore, j'envoie ma chaîne à celui qui vient de m'envoyer sa chaîne
+		// 5) Si ma chaine est plus courte mais qu'il y a des blocs en conflit : je reprends toutes les données dans mon buffer
+		///    je supprime mes blocs de ma chaîne et j'accepte cette autre chaîne, je re-broadcast les données qui ne sont plus dans ma chaîne
+		// 6) Si ma chaine est de même taille (blocs) : je conserve la chaîne de plus grande taille totale (octets) et je fais comme en 4) (broadcast des transactions)
+		// 7) Si ma chaine a été changée (et donc validée), je relaye l'information : nouvelle chaîne
+		
+		// Il s'agit ici d'une implémentation partielle
+		
 		if (receivedBlockChain == null) return;
 		SCNode_rcvBlockChainResult result = new SCNode_rcvBlockChainResult();
 		// 1) Je vérifie la chaîne reçue : s'il y a la moindre erreur dans la signature des blocs, je l'ignore totalement

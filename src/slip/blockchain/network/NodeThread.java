@@ -9,6 +9,7 @@ import slip.network.buffers.NetBuffer;
 import slip.network.tcp.TCPServer;
 
 /**
+ * Pas totalement commenté, ni totalement implémenté, par manque de temps
  * Classe gérant la node dans son environnement.
  * Fil gérant la node en réseau.
  * 

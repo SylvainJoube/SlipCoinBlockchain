@@ -5,13 +5,10 @@ import java.util.ArrayList;
 
 import slip.network.buffers.NetBuffer;
 
-/**
- * Serveur TCP 
- * -Accepte les nouveaux clients
- * -Reçoit les messages des clients
- * -Envoit des messages aux clients
- * @author admin
- *
+/** Principe du TCPServer :
+ * Un thread est créé pour accepter de nouveaux clients.
+ * S'il y a un nouveau client (tcp de java) accepté par un TCPServer, il est mis en attente dans le buffer du serveur.
+ * Un TCPClient est retourné lors de l'appel à TCPServer.accept(), ou null si aucun client n'est en attente d'acceptation.
  */
 public class TCPServer {
 	
@@ -26,7 +23,7 @@ public class TCPServer {
 	private TCPServerAcceptThread acceptThread;
 	
 	/** Ecriture d'un message d'information (log)
-	 * 
+	 * Formatté en "date + message"
 	 */
 	private void log(String message) {
 		String dateStr = java.time.LocalDate.now().toString()
@@ -34,6 +31,8 @@ public class TCPServer {
 		System.out.println(dateStr + " : " + message);
 	}
 	
+	/** Fonction privée pour actualiser l'état "à l'écoute sur le port"
+	 */
 	private void refreshListeningState() {
 		if (acceptThread == null) {
 			isActuallyListening = false;
@@ -45,6 +44,10 @@ public class TCPServer {
 		}
 	}
 	
+	/** Constructeur (bloquant en attendant que le serveur s'ouvre (pas long))
+	 * Utiliser à la suite TCPServer.isListening() pour savoir si le port a bien été ouvert.
+	 * @param arg_listenOnPort le port à écouter
+	 */
 	public TCPServer(int arg_listenOnPort) {
 		listenOnPort = arg_listenOnPort;
 		servSock = null;
@@ -58,19 +61,25 @@ public class TCPServer {
 			isActuallyListening = false;
 		}
 	}
-	
+	/** Fermer le serveur
+	 */
 	public void close() {
 		if (acceptThread != null) try {
 			acceptThread.close();
 			servSock.close();
 		} catch (Exception e) { }
 	}
-	
+	/** Regarde si le serveur écoute bien le port défini
+	 * @return vrai si le serveur écoute, false sinon
+	 */
 	public boolean isListening() {
 		refreshListeningState();
 		return isActuallyListening;
 	}
 	
+	/** Récupérer le socket (java et bloquant) du serveur
+	 * @return
+	 */
 	public ServerSocket getServSock() {
 		return servSock;
 	}
@@ -115,32 +124,14 @@ public class TCPServer {
 		//System.out.println("Server STOPPED.");
 	}
 	
-	/*
-	public NetBuffer getClientMessage(int clientIndex) {
-		synchronized (clientListLock) {
-			if (clientIndex < 0) return null;
-			if (clientIndex >= clientList.size()) return null;
-			TCPClient clientAtIndex = clientList.get(clientIndex);
-			return clientAtIndex.getNewMessage();
-		}
-	}
-	public boolean clientHasNewMessage(int clientIndex) {
-		synchronized (clientListLock) {
-			if (clientIndex < 0) return false;
-			if (clientIndex >= clientList.size()) return false;
-			TCPClient clientAtIndex = clientList.get(clientIndex);
-			return clientAtIndex.hasNewMessage();
-		}
-	}*/
 	
-	
-	/** Ajout d'un nouveau client au serveur
-	 * @param newClient
+	/** Ajout d'un nouveau client au serveur depuis le thread TCPServerAcceptThread (acceptThread)
+	 * @param newClient nouveau
 	 */
 	public void addClientFromAcceptThread(TCPClient newClient) {
 		synchronized (clientList_notYetAccepted_Lock) {
 			clientList_notYetAccepted.add(newClient);
-			//System.out.println("Ajout d'un lcient au serveur !");
+			//System.out.println("Ajout d'un cient au serveur !");
 		}
 	}
 	

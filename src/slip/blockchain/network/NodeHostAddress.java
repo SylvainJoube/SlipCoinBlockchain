@@ -2,7 +2,7 @@ package slip.blockchain.network;
 
 
 /** Garde en mémoire les adresses des hôtes et la dernière fois qu'ils ont répondu
- * 
+ *  Pas totalement commenté, par manque de temps
  */
 public class NodeHostAddress {
 

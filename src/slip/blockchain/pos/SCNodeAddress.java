@@ -3,7 +3,7 @@ package slip.blockchain.pos;
 import slip.network.tcp.TCPClient;
 
 /** Stocke l'adresse d'une autre cellule du réseau
- * 
+ * Pas encore implémenté totalement, par manque de temps
  *
  */
 public class SCNodeAddress {

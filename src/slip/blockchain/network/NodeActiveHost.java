@@ -4,6 +4,10 @@ import slip.blockchain.pos.SCBlockData_transaction;
 import slip.network.buffers.NetBuffer;
 import slip.network.tcp.TCPClient;
 
+/**
+ * Pas encore totalement implémenté, par manque de temps
+ * Pas totalement commenté, par manque de temps
+ */
 public class NodeActiveHost {
 	
 	public static final long maxInactivityTime = 2 * 60 * 1000; // en millisecondes

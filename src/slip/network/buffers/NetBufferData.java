@@ -5,7 +5,7 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * Décrit une donnée utilisée dans le NetBuffer
- * @author admin
+ * Pas totalement commenté, par manque de temps (mais les noms des méthodes sont explicites)
  *
  */
 
@@ -42,57 +42,6 @@ public class NetBufferData {
 		dataType = NetBufferDataType.BOOLEAN;
 		booleanData = new Boolean(arg_booleanData);
 	}
-	
-	/*
-	public NetBufferData(boolean decodeFromByteArray, byte[] arg_decodeFromByteArray) {
-		if (arg_decodeFromByteArray == null) {
-			dataType = NetBufferDataType.UNKNOWN;
-			return;
-		}
-		ByteBuffer byteBuff = ByteBuffer.allocate(arg_decodeFromByteArray.length);
-		byteBuff.put(arg_decodeFromByteArray);
-		byteBuff.rewind();
-		byte dataTypeAsByte = byteBuff.get();
-		dataType = NetBufferDataType.getType(dataTypeAsByte);
-		switch (dataType) {
-		case INTEGER :
-			integerData = byteBuff.getInt();
-			return;
-			
-		case DOUBLE :
-			doubleData = byteBuff.getDouble();
-			return;
-			
-		case STRING :
-			int strLength = byteBuff.getInt();
-			
-			integerData = byteBuff.getInt();
-			return;
-			
-		case INTEGER :
-			integerData = byteBuff.getInt();
-			return;
-		}
-		
-		
-		
-		//dataType = NetBufferDataType.BYTE_ARRAY;
-		//byteArrayData = arg_byteArrayData;
-	}*/
-	
-	
-	/** Récupérer la taille de la donnée stockée
-	 * @return
-	 */
-	/*public int getSize() {
-		switch (dataType) {
-		case INTEGER : return 4; // = Integer.SIZE
-		case DOUBLE : return 8;
-		case STRING : return stringData.length() * 2;
-		case BYTE_ARRAY : return byteArrayData.length;
-		default : return 0;
-		}
-	}*/
 	
 	public byte[] toByteArray() {
 		switch (dataType) {

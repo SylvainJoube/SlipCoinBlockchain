@@ -1,7 +1,0 @@
-/**
- * 
- */
-/**
- *
- */
-package slip.blockchain.wallet;

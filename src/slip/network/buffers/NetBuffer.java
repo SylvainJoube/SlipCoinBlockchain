@@ -4,6 +4,10 @@ package slip.network.buffers;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
+/**
+ * Classe NetBuffer permettant de constituer des messages
+ * Pas totalement commenté, par manque de temps
+ */
 
 public class NetBuffer { // fonctionnement synchrone, non thread-safe
 	
@@ -65,6 +69,9 @@ public class NetBuffer { // fonctionnement synchrone, non thread-safe
 		return dataList.size() - 1;
 	}
 	
+	/** Fonction de débug UNIQUEMENT, ne sert qu'à avoir un aperçu de ce qu'un y a dans le NetBuffer
+	 * Pour convertir un NetBuffer de manière exhaustive, il faut utiliser convertToByteArray
+	 */
 	public String toString() {
 		StringBuffer buff = new StringBuffer();
 		for (NetBufferData data : this.dataList) {
@@ -77,7 +84,7 @@ public class NetBuffer { // fonctionnement synchrone, non thread-safe
 	// Les Read retournent une exception si on tente de lire un 
 	
 	
-	public int readInteger() { // unsafe : throws IndexOutOfBoundsException
+	public int readInteger() { // ne retourne pas d'exception IndexOutOfBoundsException.
 		if (currentReadPos >= dataList.size()) return 0;
 		NetBufferData data = dataList.get(currentReadPos);
 		currentReadPos++;
@@ -87,7 +94,7 @@ public class NetBuffer { // fonctionnement synchrone, non thread-safe
 	}
 	public int readInt() { return readInteger(); }
 
-	public double readLong() {
+	public long readLong() {
 		if (currentReadPos >= dataList.size()) return 0;
 		NetBufferData data = dataList.get(currentReadPos);
 		currentReadPos++;

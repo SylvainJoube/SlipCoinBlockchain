@@ -14,11 +14,15 @@ import slip.network.buffers.NetBuffer;
 import slip.network.buffers.NetBufferData;
 
 
+/** TCPClientThread
+ * Pas bien commenté, par manque de temps !
+ */
+
 public class TCPClientThread implements Runnable {
 
 	private static final int MAX_MESSAGE_SIZE = 1_000_000; // 1mo en taille de message maximale (au-delà, je considère qu'il y a erreur)
 	private static final int MAX_RCV_BUFFER_SIZE = 10_000_000;
-	private static final int MAX_MESSAGE_LIST_TOTAL_SIZE = 10_000_000;
+	//private static final int MAX_MESSAGE_LIST_TOTAL_SIZE = 10_000_000;
 	private TCPClient myClient;
 	private Socket mySocket;
 	private final int connectToPort;
@@ -39,7 +43,7 @@ public class TCPClientThread implements Runnable {
 	private AtomicBoolean criticalSecurityIssue = new AtomicBoolean(false); // Vrai si la sécurité n'a pas pu être garantie
 	// ----
 	
-	private ArrayList<NetBuffer> sendMesageList = new ArrayList<NetBuffer>(); // liste des messages à envoyer
+	// pas encore implémenté private ArrayList<NetBuffer> sendMesageList = new ArrayList<NetBuffer>(); // liste des messages à envoyer
 	
 	private Object sendMessage_lock = new Object();
 	private Object dataNotYetInBuffer_lock = new Object(); // protection de dataNotYetInBuffer
@@ -86,6 +90,8 @@ public class TCPClientThread implements Runnable {
 			dataNotYetInBuffer = new byte[0];
 	}
 	
+	
+	// Pas encore implémenté, mais bientôt !
 	private boolean initialiseSecurity_receiveMessages() {
 		// Première étape de gestion de la sécurité : réception de la version du protocole utilisé
 		if (securityCurrentStep == 0) {
@@ -122,30 +128,8 @@ public class TCPClientThread implements Runnable {
 		synchronized (dataNotYetInBuffer_lock) { // modification des données de dataNotYetInBuffer
 			
 			// sécurité non encore implémentée - initialiseSecurity_receiveMessages();
-			
 			// Première étape de gestion de la sécurité : réception de la version du protocole utilisé
-			/*if (securityCurrentStep == 0) {
-				if (dataNotYetInBuffer.length < 4) return false;
-				byte receivedEnableSecurityAsByte = dataNotYetInBuffer[0];
-				boolean receivedEnableSecurity = (receivedEnableSecurityAsByte == 1);
-				securityEnabled = (receivedEnableSecurity || forceSecurity); // l'autre socket demande l'établissement d'une liaison sécurisée, ou je demande une connexion sécurisée
-				// Réception de la version (toujours, même si la sécurité n'est pas activée)
-				byte[] a1ReceivedSecurityVersion = new byte[3];
-				System.arraycopy(dataNotYetInBuffer, 1, a1ReceivedSecurityVersion, 0, 3);
-				removeFirstBytesOfRCVBuffer(4);
-				// Vérification de la version
-				if (securityEnabled) {
-					if (Arrays.equals(a1SecurityVersion, a1ReceivedSecurityVersion)) {
-						securityCurrentStep = 1;
-					} else {
-						// Erreur critique : la sécurité n'a pas pu être établie, les deux versions ne coïncident pas
-						criticalSecurityIssue.set(true);
-					}
-				} else
-					securityCurrentStep = 100; // passage de toutes les étapes de sécurité si la connexion n'est pas sécurisée
-				
-				return true;
-			}*/
+			/* initialiseSecurity_receiveMessages(); */
 			
 			
 			if ( dataNotYetInBuffer.length < 4 )
@@ -263,7 +247,21 @@ public class TCPClientThread implements Runnable {
 			}
 			
 			try {
+				if (mySocket == null) {
+					stillActive.set(false);
+					criticalErrorMessage = "mySocket nis à null.";
+					criticalErrorOccured.set(true);
+					tryCloseSocket();
+					return;
+				}
 				InputStream input = mySocket.getInputStream();
+				if (input == null) {
+					stillActive.set(false);
+					criticalErrorMessage = "mySocket non null mais son getInputStream l'est.";
+					criticalErrorOccured.set(true);
+					tryCloseSocket();
+					return;
+				}
 				byte[] newBytesArray = new byte[1024];
 				int bytesReceived = input.read(newBytesArray);
 				// réception des nouveaux octets
@@ -313,9 +311,10 @@ public class TCPClientThread implements Runnable {
 		return isConnected.get();
 	}
 	
-	public void addMessageToSendList(NetBuffer message) {
-		if (message == null) return;
-		if (mySocket == null) return;
+	
+	public boolean addMessageToSendList(NetBuffer message) {
+		if (message == null) return false;
+		if (mySocket == null) return false;
 		synchronized (sendMessage_lock) {
 			try {
 				//System.out.println("TCPClientThread.addMessageToSendList()");
@@ -324,10 +323,11 @@ public class TCPClientThread implements Runnable {
 				mySocketOutStream.write(buffToSend);
 				//System.out.println("TCPClientThread.addMessageToSendList() : OK ! Message bien envoyé.");
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				return false; // si le socket n'est pas encore connecté
+				//e.printStackTrace();
 			}
 		}
+		return true;
 	}
 	
 	public synchronized void stop() { // TODO faire un meilleur synchronized

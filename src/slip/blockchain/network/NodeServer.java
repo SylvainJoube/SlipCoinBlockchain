@@ -6,7 +6,7 @@ import slip.network.tcp.TCPClient;
 import slip.network.tcp.TCPServer;
 
 /** Serveur de la cellule, s'occupe d'accepter de nouvelles connexions
- * 
+ * Pas totalement commenté, ni totalement implémenté, par manque de temps
  */
 
 public class NodeServer {

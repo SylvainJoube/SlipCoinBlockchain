@@ -358,9 +358,9 @@ public class FullTest {
 		}
 	}
 	
-	public static void main(String[] args) throws InterruptedException {
+	public static void main_ENLEVER_POUR_TESTER(String[] args) throws InterruptedException {
 		
-
+		
 		SCCoinWallet walletNode1 = SCCoinWallet.createNewWallet("Node 1 owner");
 		SCCoinWallet walletNode2 = SCCoinWallet.createNewWallet("Node 2 owner");
 		SCCoinWallet walletNode3 = SCCoinWallet.createNewWallet("Node 3 owner");

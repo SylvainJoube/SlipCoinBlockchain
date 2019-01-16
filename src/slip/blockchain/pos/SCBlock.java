@@ -22,9 +22,8 @@ interface SCBlockInterafce {
 	
 }
 
-/**
- * Un bloc de la chaine
- *
+/** Un bloc de la chaine
+ * 
  */
 public class SCBlock implements SCBlockInterafce {
 	
@@ -39,7 +38,7 @@ public class SCBlock implements SCBlockInterafce {
 	
 	
 	//private String myHash; recalculé à chaque fois // Hash de ce bloc (garantit qu'il ne peut pas être modifié)
-	private boolean criticalErrorOccured = false;
+	//private boolean criticalErrorOccured = false;
 	
 	
 
@@ -66,10 +65,6 @@ public class SCBlock implements SCBlockInterafce {
 		return null;
 	}*/
 	
-	// Hasher le bloc
-	// Signer le bloc
-	// Vérifier le bloc
-	
 	public void readFromNetBuffer(NetBuffer readFromNetBuff, boolean hasBlockSignature) {
 		
 		previousBlockSignature = readFromNetBuff.readString();
@@ -84,7 +79,8 @@ public class SCBlock implements SCBlockInterafce {
 				SCBlockData_transaction dataTransaction = SCBlockData_transaction.readFromNetBuffer(scDataAsNetBuffer, 0); // création de la transaction
 				myData.add(dataTransaction); // ajout de la transaction au bloc
 			} else {
-				System.out.println("ERREUR : SCBlock.readFromNetBuffer() : donnée de type invalide dataType(" + dataType + ") != SCBlockDataType.TRANSACTION.asInt()(" + SCBlockDataType.TRANSACTION.asInt() + ")"); 
+				// il pourra y avoir, par la suite, d'autres types de données qu eles transaction simples
+				//System.out.println("ERREUR : SCBlock.readFromNetBuffer() : donnée de type invalide dataType(" + dataType + ") != SCBlockDataType.TRANSACTION.asInt()(" + SCBlockDataType.TRANSACTION.asInt() + ")"); 
 			}
 			// Lecture de la signature du bloc
 			if (hasBlockSignature) {

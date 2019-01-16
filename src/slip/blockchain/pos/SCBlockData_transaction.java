@@ -14,6 +14,7 @@ import slip.security.common.RSAKey;
 public class SCBlockData_transaction implements SCBlockData {
 	
 	// Mis en public pour gagner un peu de temps et ne pas faire les getters et setters
+	// Utile pour tes tests d'intégrité de la transaction : faire comme si un attaquant modifiant des champs
 	public double amount; // strictement positif
 	public String senderPublicKey; // adresse de l'émetteur
 	public String receiverPublicKey; // adresse du récepteur
@@ -50,10 +51,10 @@ public class SCBlockData_transaction implements SCBlockData {
 		
 		readFromBuffer.setPosition(bufferOffset);
 		readFromBuffer.readInt(); // type de la donnée (ici SCBlockDataType.TRANSACTION.asInt())
-		int amount = readFromBuffer.readInt();
+		double amount = readFromBuffer.readDouble();
 		String senderPublicKey = readFromBuffer.readString();
 		String receiverPublicKey = readFromBuffer.readString();
-		int timeStamp = readFromBuffer.readInt();
+		long timeStamp = readFromBuffer.readLong();
 		String senderSignature = readFromBuffer.readString();
 		
 		SCBlockData_transaction transaction = new SCBlockData_transaction(amount, senderPublicKey, receiverPublicKey, timeStamp, false, null, senderSignature);
@@ -103,10 +104,10 @@ public class SCBlockData_transaction implements SCBlockData {
 	}
 	
 	// Ici, je pars du principe que la transaction n'est pas encore signée
-	public SCBlockData_transaction(double arg_amount, String arg_senderKey, String arg_receiverKey, long arg_timeStamp, boolean hasToSignTransaction, String senderPrivateKey, String arg_senderSignature) { // , String arg_senderSignature
+	public SCBlockData_transaction(double arg_amount, String arg_senderPublicKey, String arg_receiverPublicKey, long arg_timeStamp, boolean hasToSignTransaction, String senderPrivateKey, String arg_senderSignature) { // , String arg_senderSignature
 		// Utilisation pour une transaction non signée
-		senderPublicKey = arg_senderKey;
-		receiverPublicKey = arg_receiverKey;
+		senderPublicKey = arg_senderPublicKey;
+		receiverPublicKey = arg_receiverPublicKey;
 		amount = arg_amount;
 		timeStamp = arg_timeStamp;
 		if (hasToSignTransaction)
@@ -115,6 +116,18 @@ public class SCBlockData_transaction implements SCBlockData {
 			senderSignature = arg_senderSignature;
 		}
 	}
+	
+	/** Créer une transaction à partir du montant, du portefeuille de l'émetteur et de l'adresse du destinataire
+	 * Note : aucune vérification n'est effectuée sur la validité de cette transaction, elle sera vérifiée quand ajoutée à une SCNode ou reçue du réseau
+	 * @param arg_amount    montant (doit être positif, sinon sera invalidé lors de l'ajout un une SCNode)
+	 * @param senderWallet  portefeuille de l'émetteur (contient sa clef publique et sa clef privée pour signer la transaction)
+	 * @param arg_receiverPublicKey  clef publique du portefeuille à qui est adressé la transaction
+	 * @return
+	 */
+	public static SCBlockData_transaction createTransaction(double arg_amount, SCCoinWallet senderWallet, String arg_receiverPublicKey) {
+		return new SCBlockData_transaction(arg_amount, senderWallet.getPublicKey(), arg_receiverPublicKey, System.currentTimeMillis(), true, senderWallet.getPrivateKey(), null);
+	}
+	
 	
 	@Override
 	public String toString() {
